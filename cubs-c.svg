@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" shape-rendering="geometricPrecision" aria-label="Chicago Cubs C logo">
+  <!-- Royal blue outer disc -->
+  <circle cx="50" cy="50" r="49" fill="#0E3386"/>
+  <!-- Cream inner field -->
+  <circle cx="50" cy="50" r="43" fill="#FAF6E9"/>
+  <!-- Thick red C: 300° arc opened on the right -->
+  <path d="M 78 30 A 30 30 0 1 0 78 70"
+        fill="none" stroke="#CC3433" stroke-width="14" stroke-linecap="butt"/>
+  <!-- Subtle serifs at the C openings -->
+  <rect x="71" y="22" width="13" height="6" fill="#CC3433"/>
+  <rect x="71" y="72" width="13" height="6" fill="#CC3433"/>
+</svg>
