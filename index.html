@@ -753,6 +753,10 @@
   }
 
   // ---------- Magic number math ----------
+  // The binding chaser for the magic number is the non-leader team with the
+  // FEWEST losses (their losses are what cap the leader's clinch path), NOT
+  // necessarily whoever sits in 2nd place by win pct. When multiple teams are
+  // tied on losses, every one of them is binding.
   function computeMagic(nlCentralRecords) {
     const winPct = t => t.wins / Math.max(1, t.wins + t.losses);
     const sorted = [...nlCentralRecords].sort((a, b) =>
@@ -761,29 +765,52 @@
     const cubs = sorted.find(t => t.team.id === TEAM_ID);
     const leader = sorted[0];
     const isLeader = leader.team.id === TEAM_ID;
-    const chaser = isLeader ? sorted[1] : leader;
+
+    // Find binding chaser(s) by fewest losses among non-leaders.
+    const nonLeaders = sorted.filter(t => t.team.id !== leader.team.id);
+    const minLosses = nonLeaders.length ? Math.min(...nonLeaders.map(t => t.losses)) : 0;
+    const bindingChasers = nonLeaders.filter(t => t.losses === minLosses);
+    const chaser = bindingChasers[0] || (isLeader ? sorted[1] : leader);
 
     const magicToClinch = Math.max(0, (TOTAL_GAMES + 1) - cubs.wins - chaser.losses);
     const tragicNumber = isLeader
       ? null
       : Math.max(0, (TOTAL_GAMES + 1) - leader.wins - cubs.losses);
 
-    return { sorted, cubs, leader, chaser, isLeader, magicToClinch, tragicNumber };
+    return { sorted, cubs, leader, chaser, bindingChasers, isLeader, magicToClinch, tragicNumber };
+  }
+
+  // Format a list of chaser team names: "Cardinals", "Cardinals & Reds",
+  // "Cardinals, Reds & Brewers".
+  function formatChasers(teams) {
+    const names = teams.map(t => shortName(t.team));
+    if (names.length === 0) return 'the field';
+    if (names.length === 1) return names[0];
+    if (names.length === 2) return `${names[0]} &amp; ${names[1]}`;
+    return names.slice(0, -1).join(', ') + ` &amp; ${names[names.length - 1]}`;
   }
 
   // ---------- Render: Hero ----------
   let lastMagic = null;
   function renderHero(state) {
-    const { cubs, isLeader, magicToClinch, leader, chaser, tragicNumber } = state;
+    const { cubs, isLeader, magicToClinch, leader, chaser, bindingChasers, tragicNumber } = state;
 
     let displayNumber, contextHtml, label;
 
     if (isLeader) {
       displayNumber = magicToClinch;
       label = 'Magic Number';
-      const teamWord = chaser ? shortName(chaser.team) : 'the field';
-      contextHtml = `Any combination of <strong>Cubs wins</strong> and <strong>${teamWord} losses</strong> totaling
-        <strong>${magicToClinch}</strong> clinches the NL Central.`;
+      const chaserPhrase = bindingChasers && bindingChasers.length
+        ? formatChasers(bindingChasers)
+        : (chaser ? shortName(chaser.team) : 'the field');
+      const lossWord = (bindingChasers && bindingChasers.length > 1) ? 'losses' : 'losses';
+      const tieNote = (bindingChasers && bindingChasers.length > 1)
+        ? `<span style="display:block;margin-top:6px;color:var(--ink-faint);font-size:0.92em;">
+            All tied at ${bindingChasers[0].losses} losses — every one of their losses counts toward the magic number.
+          </span>`
+        : '';
+      contextHtml = `Any combination of <strong>Cubs wins</strong> and <strong>${chaserPhrase} ${lossWord}</strong> totaling
+        <strong>${magicToClinch}</strong> clinches the NL Central.${tieNote}`;
     } else {
       // Cubs trailing — show "games to overtake the leader" (chase number) as the headline
       const chase = Math.max(0, leader.wins - cubs.wins) + 1;
