@@ -429,6 +429,29 @@
     font-size: 18px; font-weight: 700; margin-bottom: 6px;
   }
   .game-opp .at { color: var(--ink-faint); font-weight: 500; margin-right: 6px; }
+  .opp-record {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink-dim);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    vertical-align: middle;
+    transform: translateY(-1px);
+  }
+  .opp-record-lg {
+    margin-left: 10px;
+    padding: 4px 10px;
+    font-size: 14px;
+    border-radius: 8px;
+    color: var(--ink);
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.14);
+  }
   .game-score {
     font-family: 'JetBrains Mono', monospace;
     font-size: 20px; font-weight: 700;
@@ -680,11 +703,22 @@
   }
 
   // ---------- API ----------
+  // Fetch both AL and NL standings — Cubs play interleague opponents too, and
+  // we need every team's record for the upcoming-opponent badges.
   async function fetchStandings() {
-    const url = `https://statsapi.mlb.com/api/v1/standings?leagueId=${NL_LEAGUE_ID}&season=${SEASON}&standingsTypes=regularSeason`;
+    const url = `https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=${SEASON}&standingsTypes=regularSeason`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('standings ' + r.status);
     return r.json();
+  }
+  function buildTeamRecordMap(standings) {
+    const map = {};
+    (standings.records || []).forEach(div => {
+      (div.teamRecords || []).forEach(t => {
+        map[t.team.id] = { wins: t.wins, losses: t.losses };
+      });
+    });
+    return map;
   }
   async function fetchSchedule(startDate, endDate) {
     const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${startDate}&endDate=${endDate}&hydrate=team,linescore,decisions`;
@@ -881,8 +915,14 @@
     };
   }
 
-  function renderGameCard(c) {
+  function renderGameCard(c, recordMap) {
     const oppName = c.oppSide.team.teamName || c.oppSide.team.name;
+    const oppRec = recordMap && recordMap[c.oppSide.team.id];
+    // Show the opponent's current record only on scheduled (not-yet-played)
+    // games — for finals it would be stale-as-of-now and confusing.
+    const recordTag = (!c.isFinal && !c.isLive && oppRec)
+      ? ` <span class="opp-record">${oppRec.wins}-${oppRec.losses}</span>`
+      : '';
     let scoreOrTime;
     if (c.isFinal) {
       scoreOrTime = `<div class="game-score">${c.cubsSide.score}–<span class="opp-score">${c.oppSide.score}</span></div>`;
@@ -899,23 +939,23 @@
       <div class="game-card ${cls}">
         ${resultBadge}
         <div class="game-date">${fmtDate(c.date)}</div>
-        <div class="game-opp"><span class="at">${c.isHome ? 'vs' : '@'}</span>${oppName}</div>
+        <div class="game-opp"><span class="at">${c.isHome ? 'vs' : '@'}</span>${oppName}${recordTag}</div>
         ${scoreOrTime}
       </div>`;
   }
 
-  function renderGames(recentClassified, upcomingClassified) {
+  function renderGames(recentClassified, upcomingClassified, recordMap) {
     const r = $('recent-games');
     const u = $('upcoming-games');
     if (recentClassified.length === 0) {
       r.innerHTML = `<div style="color:var(--ink-dim); padding:14px;">No recent games yet — opening day is right around the corner.</div>`;
     } else {
-      r.innerHTML = recentClassified.slice().reverse().map(renderGameCard).join('');
+      r.innerHTML = recentClassified.slice().reverse().map(c => renderGameCard(c, recordMap)).join('');
     }
     if (upcomingClassified.length === 0) {
       u.innerHTML = `<div style="color:var(--ink-dim); padding:14px;">Schedule fully played — see you next season!</div>`;
     } else {
-      u.innerHTML = upcomingClassified.map(renderGameCard).join('');
+      u.innerHTML = upcomingClassified.map(c => renderGameCard(c, recordMap)).join('');
     }
     $('recent-count').textContent = `${recentClassified.length} GAMES`;
     $('upcoming-count').textContent = `${upcomingClassified.length} GAMES`;
@@ -923,15 +963,19 @@
 
   // ---------- Next game card ----------
   let countdownTimer = null;
-  function renderNextGame(nextClassified) {
+  function renderNextGame(nextClassified, recordMap) {
     const sec = $('next-game-section');
     if (!nextClassified) { sec.style.display = 'none'; return; }
     sec.style.display = 'block';
     const c = nextClassified;
     const oppName = c.oppSide.team.name;
+    const oppRec = recordMap && recordMap[c.oppSide.team.id];
+    const recordTag = (!c.isFinal && !c.isLive && oppRec)
+      ? ` <span class="opp-record opp-record-lg">${oppRec.wins}-${oppRec.losses}</span>`
+      : '';
     const matchup = c.isHome
-      ? `Cubs <span class="vs">vs</span> ${oppName}`
-      : `Cubs <span class="vs">@</span> ${oppName}`;
+      ? `Cubs <span class="vs">vs</span> ${oppName}${recordTag}`
+      : `Cubs <span class="vs">@</span> ${oppName}${recordTag}`;
     const when = `${fmtDate(c.date)} · ${fmtTime(c.date)}`;
 
     const html = `
@@ -1077,9 +1121,10 @@
         fetchSchedule(isoDate(start), isoDate(end))
       ]);
 
-      // Standings: NL Central
+      // Standings: NL Central (for magic-number math) + flat record map (for opponent badges)
       const nlCentral = standings.records.find(r => r.division.id === NL_CENTRAL_DIV_ID);
       if (!nlCentral) throw new Error('NL Central not found');
+      const recordMap = buildTeamRecordMap(standings);
 
       const state = computeMagic(nlCentral.teamRecords);
 
@@ -1099,9 +1144,9 @@
       renderHero(state);
       renderMeta(state.cubs, recent);
       renderStandings(state.sorted);
-      renderGames(recent, upcoming);
+      renderGames(recent, upcoming, recordMap);
       const next = live[0] || upcoming[0] || null;
-      renderNextGame(next);
+      renderNextGame(next, recordMap);
 
       setLastUpdated();
 
