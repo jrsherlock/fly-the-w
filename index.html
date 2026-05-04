@@ -323,6 +323,154 @@
     font-family: 'Inter', sans-serif;
   }
 
+  /* Live game card */
+  .next-game-card.live-now {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+    background:
+      linear-gradient(135deg, rgba(204,52,51,0.22), rgba(14,51,134,0.5)),
+      var(--card);
+    border-color: rgba(255,200,100,0.45);
+    animation: liveglow 2.4s ease-in-out infinite alternate;
+  }
+  .live-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 22px;
+    align-items: center;
+  }
+  .live-score {
+    display: flex; align-items: baseline;
+    gap: 8px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(22px, 3vw, 36px);
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  .live-score .lbl { font-size: 0.55em; color: var(--ink-dim); letter-spacing: 0.16em; text-transform: uppercase; }
+  .live-score .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 1em;
+    color: var(--ink);
+    min-width: 1.6ch; text-align: center;
+  }
+  .live-score .num.lead { color: var(--gold); }
+  .live-score .dash { color: var(--ink-faint); margin: 0 4px; }
+  .bases {
+    position: relative;
+    width: 64px; height: 64px;
+    flex-shrink: 0;
+  }
+  .base {
+    position: absolute;
+    width: 16px; height: 16px;
+    transform: rotate(45deg);
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: 2px;
+    transition: all 0.25s;
+  }
+  .base.on {
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 0 14px rgba(201,169,97,0.7);
+  }
+  .base.first { right: 4px; top: 50%; margin-top: -8px; }
+  .base.second { left: 50%; top: 4px; margin-left: -8px; }
+  .base.third { left: 4px; top: 50%; margin-top: -8px; }
+  .live-count {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .live-count .bs {
+    font-size: 22px; font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+  .live-count .out {
+    display: block;
+    font-size: 10px; letter-spacing: 0.16em;
+    color: var(--ink-faint);
+    text-transform: uppercase; font-weight: 700;
+    margin-top: 3px;
+  }
+  .live-wp {
+    text-align: center;
+    min-width: 80px;
+  }
+  .live-wp small {
+    display: block;
+    font-size: 9px; letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    font-weight: 700; text-transform: uppercase;
+  }
+  .live-wp strong {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    color: var(--cubs-blue-glow);
+    text-shadow: 0 0 14px rgba(58,111,255,0.5);
+  }
+  .live-wp.cold strong { color: var(--loss); text-shadow: 0 0 14px rgba(239,68,68,0.4); }
+  .live-wp.warm strong { color: var(--gold); text-shadow: 0 0 14px rgba(201,169,97,0.5); }
+  .live-wp.hot strong { color: var(--win); text-shadow: 0 0 14px rgba(74,222,128,0.5); }
+  .live-action {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 22px;
+    font-size: 13px;
+    color: var(--ink-dim);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 14px;
+  }
+  .live-action div small {
+    display: block;
+    font-size: 9px; letter-spacing: 0.18em;
+    color: var(--ink-faint); font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .live-action strong { color: var(--ink); font-weight: 700; }
+  .live-last {
+    grid-column: 1 / -1;
+    background: rgba(255,255,255,0.04);
+    border-left: 2px solid var(--gold);
+    padding: 8px 12px;
+    font-style: italic;
+    color: var(--ink);
+    font-size: 13px;
+    border-radius: 0 6px 6px 0;
+    line-height: 1.4;
+  }
+  @media (max-width: 720px) {
+    .live-row { grid-template-columns: 1fr; gap: 14px; justify-items: center; text-align: center; }
+    .live-action { grid-template-columns: 1fr; }
+  }
+
+  /* Win probability chart in highlights modal */
+  .wp-chart {
+    margin: 0 0 18px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 12px 14px 8px;
+  }
+  .wp-chart-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 11px; letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+  }
+  .wp-chart-header .swing {
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+  .wp-svg {
+    width: 100%; height: 80px; display: block;
+  }
+
   /* Standings */
   .standings-table {
     background: var(--card);
@@ -841,6 +989,7 @@
   const TOTAL_GAMES = 162;
   const SEASON = new Date().getFullYear();
   const REFRESH_MS = 60_000;
+  const REFRESH_LIVE_MS = 15_000;
 
   const TEAM_ABBR = {
     112: 'CUBS', 134: 'PIRATES', 138: 'CARDINALS', 158: 'BREWERS', 113: 'REDS'
@@ -887,6 +1036,19 @@
     const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${startDate}&endDate=${endDate}&hydrate=team,linescore,decisions,probablePitcher`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('schedule ' + r.status);
+    return r.json();
+  }
+
+  async function fetchLiveFeed(gamePk) {
+    const url = `https://statsapi.mlb.com/api/v1.1/game/${gamePk}/feed/live`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('feed ' + r.status);
+    return r.json();
+  }
+  async function fetchWinProbability(gamePk) {
+    const url = `https://statsapi.mlb.com/api/v1/game/${gamePk}/winProbability`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('wp ' + r.status);
     return r.json();
   }
 
@@ -1142,7 +1304,7 @@
       scoreOrTime = `
         <div class="game-score">${c.cubsSide.score}–<span class="opp-score">${c.oppSide.score}</span></div>
         ${decRow}
-        <button class="highlights-btn" data-gamepk="${c.raw.gamePk}">▶ Highlights</button>`;
+        <button class="highlights-btn" data-gamepk="${c.raw.gamePk}" data-ishome="${c.isHome ? '1' : '0'}">▶ Highlights</button>`;
     } else if (c.isLive) {
       scoreOrTime = `
         <div class="game-score">${c.cubsSide.score ?? 0}–<span class="opp-score">${c.oppSide.score ?? 0}</span></div>
@@ -1187,14 +1349,102 @@
 
   // ---------- Next game card ----------
   let countdownTimer = null;
-  function renderNextGame(nextClassified, recordMap) {
+
+  function ordinal(n) {
+    const s = ['th','st','nd','rd'], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  function renderLiveGameCard(c, feed, wp) {
+    const linescore = feed?.liveData?.linescore || {};
+    const offense = linescore.offense || {};
+    const defense = linescore.defense || {};
+    const inning = linescore.currentInning || c.raw.linescore?.currentInning || '?';
+    const half = (linescore.inningState || linescore.inningHalf || '').toLowerCase();
+    const halfArrow = half.startsWith('top') ? '▲' : half.startsWith('bot') ? '▼' : (half.startsWith('mid') ? '·' : '·');
+    const halfLabel = half.startsWith('mid') ? `Mid ${ordinal(inning)}` : half.startsWith('end') ? `End ${ordinal(inning)}` : `${halfArrow} ${ordinal(inning)}`;
+    const balls = linescore.balls ?? 0;
+    const strikes = linescore.strikes ?? 0;
+    const outs = linescore.outs ?? 0;
+    const cubsScore = c.isHome ? (linescore.teams?.home?.runs ?? c.cubsSide.score ?? 0) : (linescore.teams?.away?.runs ?? c.cubsSide.score ?? 0);
+    const oppScore = c.isHome ? (linescore.teams?.away?.runs ?? c.oppSide.score ?? 0) : (linescore.teams?.home?.runs ?? c.oppSide.score ?? 0);
+    const cubsLead = cubsScore > oppScore;
+    const oppLead = oppScore > cubsScore;
+    const oppName = c.oppSide.team.teamName || c.oppSide.team.name;
+    const onFirst = !!offense.first, onSecond = !!offense.second, onThird = !!offense.third;
+
+    // Cubs WP: winProbability returns a list, last entry has the current %.
+    let cubsWPnum = null;
+    if (Array.isArray(wp) && wp.length) {
+      const last = wp[wp.length - 1];
+      const homeWP = last.homeTeamWinProbability ?? last.homeTeamWinProbabilityAdded;
+      if (homeWP != null) cubsWPnum = c.isHome ? homeWP : (100 - homeWP);
+    }
+    const wpDisplay = cubsWPnum == null ? '—' : `${Math.round(cubsWPnum)}%`;
+    const wpClass = cubsWPnum == null ? '' : (cubsWPnum >= 70 ? 'hot' : cubsWPnum >= 50 ? 'warm' : 'cold');
+
+    // Last described play.
+    const allPlays = feed?.liveData?.plays?.allPlays || [];
+    let lastPlay = '';
+    for (let i = allPlays.length - 1; i >= 0; i--) {
+      if (allPlays[i].result?.description) { lastPlay = allPlays[i].result.description; break; }
+    }
+
+    // At-bat / pitcher names. Offense.batter / defense.pitcher are usually present mid-AB.
+    const batter = offense.batter?.fullName;
+    const pitcher = defense.pitcher?.fullName;
+
+    const cubsLabel = c.isHome ? 'CUBS' : 'CUBS';
+    const oppLabel = (c.oppSide.team.abbreviation || oppName).toUpperCase().slice(0, 4);
+
+    return `
+      <div class="next-game-card live-now">
+        <div class="next-game-label" style="color: var(--cubs-red);">● LIVE · ${halfLabel}</div>
+        <div class="live-row">
+          <div class="live-score">
+            <span class="lbl">${cubsLabel}</span>
+            <span class="num ${cubsLead ? 'lead' : ''}">${cubsScore}</span>
+            <span class="dash">—</span>
+            <span class="num ${oppLead ? 'lead' : ''}">${oppScore}</span>
+            <span class="lbl">${oppLabel}</span>
+          </div>
+          <div class="bases" aria-label="Bases">
+            <span class="base second ${onSecond ? 'on' : ''}"></span>
+            <span class="base third ${onThird ? 'on' : ''}"></span>
+            <span class="base first ${onFirst ? 'on' : ''}"></span>
+          </div>
+          <div class="live-count">
+            <div class="bs">${balls}-${strikes}</div>
+            <span class="out">${outs} out${outs === 1 ? '' : 's'}</span>
+          </div>
+          <div class="live-wp ${wpClass}">
+            <small>Cubs WP</small>
+            <strong>${wpDisplay}</strong>
+          </div>
+        </div>
+        <div class="live-action">
+          ${batter ? `<div><small>At bat</small><strong>${batter}</strong></div>` : '<div></div>'}
+          ${pitcher ? `<div><small>Pitching</small><strong>${pitcher}</strong></div>` : '<div></div>'}
+          ${lastPlay ? `<div class="live-last">${lastPlay}</div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function renderNextGame(nextClassified, recordMap, feed = null, wp = null) {
     const sec = $('next-game-section');
     if (!nextClassified) { sec.style.display = 'none'; return; }
     sec.style.display = 'block';
     const c = nextClassified;
+
+    if (c.isLive) {
+      $('next-game-content').innerHTML = renderLiveGameCard(c, feed, wp);
+      if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+      return;
+    }
+
     const oppName = c.oppSide.team.name;
     const oppRec = recordMap && recordMap[c.oppSide.team.id];
-    const recordTag = (!c.isFinal && !c.isLive && oppRec)
+    const recordTag = oppRec
       ? ` <span class="opp-record opp-record-lg">${oppRec.wins}-${oppRec.losses}</span>`
       : '';
     const matchup = c.isHome
@@ -1205,19 +1455,18 @@
     const html = `
       <div class="next-game-card">
         <div class="next-game-info">
-          <div class="next-game-label">${c.isLive ? 'GAME IN PROGRESS' : 'Next Game'}</div>
+          <div class="next-game-label">Next Game</div>
           <div class="next-game-matchup">${matchup}</div>
           <div class="next-game-when">${when}${c.raw.venue ? ' · ' + c.raw.venue.name : ''}</div>
         </div>
         <div class="next-game-countdown" id="countdown">
-          <small>${c.isLive ? 'STATUS' : 'First pitch in'}</small>
-          <span id="countdown-value">${c.isLive ? c.status : '—'}</span>
+          <small>First pitch in</small>
+          <span id="countdown-value">—</span>
         </div>
       </div>`;
     $('next-game-content').innerHTML = html;
 
     if (countdownTimer) clearInterval(countdownTimer);
-    if (c.isLive) return;
     const target = new Date(c.date).getTime();
     const tick = () => {
       const diff = target - Date.now();
@@ -1332,6 +1581,7 @@
 
   // ---------- Main loader ----------
   let firstLoad = true;
+  let liveMode = false;
   async function loadAll() {
     const btn = $('refresh-btn');
     btn.classList.add('spinning');
@@ -1364,13 +1614,24 @@
       const live = allGames.filter(g => g.isLive);
       const upcoming = allGames.filter(g => !g.isFinal && !g.isLive && new Date(g.date).getTime() >= now - 60000).slice(0, 8);
 
+      // If a game is live, parallel-fetch the play-by-play feed + win prob.
+      let liveFeed = null, liveWP = null;
+      if (live[0]) {
+        const gpk = live[0].raw.gamePk;
+        [liveFeed, liveWP] = await Promise.all([
+          fetchLiveFeed(gpk).catch(() => null),
+          fetchWinProbability(gpk).catch(() => null)
+        ]);
+      }
+      liveMode = live.length > 0;
+
       // Pump it all out
       renderHero(state);
       renderMeta(state.cubs, recent);
       renderStandings(state.sorted);
       renderGames(recent, upcoming, recordMap);
       const next = live[0] || upcoming[0] || null;
-      renderNextGame(next, recordMap);
+      renderNextGame(next, recordMap, liveFeed, liveWP);
 
       setLastUpdated();
 
@@ -1393,26 +1654,64 @@
     const date = card?.querySelector('.game-date')?.textContent || '';
     const opp = card?.querySelector('.game-opp')?.textContent.trim() || '';
     const score = card?.querySelector('.game-score')?.textContent || '';
+    const isHome = btn.dataset.ishome === '1';
     $('hl-title').textContent = opp || 'Highlights';
     $('hl-sub').textContent = [date, score].filter(Boolean).join(' · ');
     $('hl-body').innerHTML = `<div class="hl-loading">Loading clips…</div>`;
     hlOverlay.classList.add('show');
 
     btn.disabled = true;
-    fetchHighlights(gamePk).then(clips => {
+    Promise.all([
+      fetchHighlights(gamePk),
+      fetchWinProbability(gamePk).catch(() => null)
+    ]).then(([clips, wp]) => {
       btn.disabled = false;
+      const wpChart = wp ? buildWPChart(wp, isHome) : '';
       if (!clips.length) {
-        $('hl-body').innerHTML = `<div class="hl-empty">No highlights posted for this game yet.</div>`;
+        $('hl-body').innerHTML = wpChart + `<div class="hl-empty">No highlights posted for this game yet.</div>`;
         return;
       }
-      renderHighlightsBody(clips);
+      renderHighlightsBody(clips, wpChart);
     }).catch(err => {
       btn.disabled = false;
       console.error(err);
       $('hl-body').innerHTML = `<div class="hl-empty">Couldn't load highlights — try again later.</div>`;
     });
   }
-  function renderHighlightsBody(clips) {
+  function buildWPChart(wp, isHome) {
+    if (!Array.isArray(wp) || wp.length < 2) return '';
+    const points = wp.map(p => {
+      const homeWP = p.homeTeamWinProbability;
+      if (homeWP == null) return null;
+      return isHome ? homeWP : (100 - homeWP);
+    }).filter(v => v != null);
+    if (points.length < 2) return '';
+
+    const W = 600, H = 80, P = 4;
+    const xAt = i => P + (i / (points.length - 1)) * (W - 2 * P);
+    const yAt = v => P + (1 - v / 100) * (H - 2 * P);
+    const path = points.map((v, i) => `${i === 0 ? 'M' : 'L'}${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join('');
+    const area = path + ` L${xAt(points.length - 1).toFixed(1)},${H} L${xAt(0).toFixed(1)},${H} Z`;
+    const finalWP = Math.round(points[points.length - 1]);
+    const peak = Math.round(Math.max(...points));
+    const valley = Math.round(Math.min(...points));
+    const swing = peak - valley;
+
+    return `
+      <div class="wp-chart">
+        <div class="wp-chart-header">
+          <span>Cubs win probability</span>
+          <span class="swing">peak ${peak}% · low ${valley}% · swing ${swing}pt</span>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="wp-svg">
+          <line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="rgba(255,255,255,0.12)" stroke-dasharray="2 4"/>
+          <path d="${area}" fill="rgba(58,111,255,0.18)"/>
+          <path d="${path}" fill="none" stroke="var(--cubs-blue-glow)" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="${xAt(points.length - 1).toFixed(1)}" cy="${yAt(points[points.length - 1]).toFixed(1)}" r="3.5" fill="${finalWP >= 50 ? 'var(--win)' : 'var(--loss)'}"/>
+        </svg>
+      </div>`;
+  }
+  function renderHighlightsBody(clips, wpChart = '') {
     const player = `
       <div class="hl-player" id="hl-player">
         <span>Pick a clip below to play</span>
@@ -1424,7 +1723,7 @@
         <div class="hl-thumb" style="background-image:url('${c.thumb}')"></div>
         <div class="hl-item-title">${c.title}</div>
       </button>`).join('')}</div>`;
-    $('hl-body').innerHTML = player + list;
+    $('hl-body').innerHTML = wpChart + player + list;
     // Auto-play the first clip — that's why fans clicked.
     playClip(clips, 0);
     $('hl-body').addEventListener('click', e => {
@@ -1469,8 +1768,26 @@
     if (h === 19) toast('🎵 Take me out to the ball game…');
   }, 1500);
 
-  loadAll();
-  setInterval(loadAll, REFRESH_MS);
+  // Adaptive polling: faster cadence while a game is live, paused while the tab
+  // is hidden so we don't burn API calls on a backgrounded tab.
+  let pollTimer = null;
+  function scheduleNextPoll() {
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+    if (document.hidden) return;
+    pollTimer = setTimeout(async () => {
+      await loadAll();
+      scheduleNextPoll();
+    }, liveMode ? REFRESH_LIVE_MS : REFRESH_MS);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+    } else {
+      // Catch up immediately when the tab comes back to the foreground.
+      loadAll().then(scheduleNextPoll);
+    }
+  });
+  loadAll().then(scheduleNextPoll);
 </script>
 </body>
 </html>
