@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cubs Magic Number — Fly the W</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cubs-blue: #0E3386;
+    --cubs-blue-deep: #07194d;
+    --cubs-blue-glow: #3a6fff;
+    --cubs-red: #CC3433;
+    --ivy-dark: #1f3a1a;
+    --ivy: #4A7C3F;
+    --ivy-bright: #7eb86a;
+    --cream: #FAF6E9;
+    --gold: #C9A961;
+    --bg-0: #04081a;
+    --bg-1: #0a1230;
+    --bg-2: #101c4d;
+    --ink: #e8ecff;
+    --ink-dim: #9aa3c7;
+    --ink-faint: #5a648c;
+    --win: #4ade80;
+    --loss: #ef4444;
+    --card: rgba(255,255,255,0.04);
+    --card-border: rgba(255,255,255,0.08);
+  }
+  *,*::before,*::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(58,111,255,0.18), transparent 50%),
+      radial-gradient(ellipse at 90% 5%, rgba(204,52,51,0.12), transparent 45%),
+      radial-gradient(ellipse at 50% 100%, rgba(74,124,63,0.10), transparent 60%),
+      linear-gradient(180deg, var(--bg-0), var(--bg-1) 60%, var(--bg-0));
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.4) 100%, transparent),
+      radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.3) 100%, transparent),
+      radial-gradient(1px 1px at 40% 60%, rgba(255,255,255,0.25) 100%, transparent),
+      radial-gradient(1.5px 1.5px at 85% 15%, rgba(255,255,255,0.5) 100%, transparent),
+      radial-gradient(1px 1px at 10% 90%, rgba(255,255,255,0.3) 100%, transparent);
+    background-size: 800px 800px;
+    opacity: 0.6;
+    z-index: 0;
+  }
+
+  /* Ivy decorations */
+  .ivy {
+    position: fixed; pointer-events: none; z-index: 1;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle at 20% 20%, var(--ivy-bright), transparent 8%),
+                radial-gradient(circle at 40% 35%, var(--ivy), transparent 10%),
+                radial-gradient(circle at 25% 55%, var(--ivy-bright), transparent 7%),
+                radial-gradient(circle at 55% 50%, var(--ivy-dark), transparent 9%),
+                radial-gradient(circle at 70% 25%, var(--ivy), transparent 8%),
+                radial-gradient(circle at 60% 70%, var(--ivy-bright), transparent 7%),
+                radial-gradient(circle at 35% 80%, var(--ivy-dark), transparent 9%),
+                radial-gradient(circle at 80% 75%, var(--ivy), transparent 8%);
+    filter: blur(0.5px);
+    opacity: 0.55;
+    mix-blend-mode: screen;
+  }
+  .ivy.tl { top: -90px; left: -90px; }
+  .ivy.br { bottom: -90px; right: -90px; transform: scaleX(-1); }
+
+  /* Top bar */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    background: linear-gradient(180deg, rgba(4,8,26,0.85), rgba(4,8,26,0.55));
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+    font-weight: 800; letter-spacing: 0.02em;
+  }
+  .c-logo {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--cubs-red);
+    color: var(--cream);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border: 3px solid var(--cream);
+    box-shadow: 0 0 0 2px var(--cubs-red), 0 4px 14px rgba(204,52,51,0.45);
+    line-height: 1;
+    padding-top: 2px;
+  }
+  .brand-text { font-size: 18px; }
+  .brand-text small { display: block; color: var(--ink-dim); font-weight: 500; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; }
+
+  .status {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 13px; color: var(--ink-dim);
+  }
+  .live-dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--win);
+    box-shadow: 0 0 0 0 rgba(74,222,128,0.7);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(74,222,128,0.7); }
+    70% { box-shadow: 0 0 0 12px rgba(74,222,128,0); }
+    100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+  }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 11px; border-radius: 999px;
+    background: rgba(74,222,128,0.08);
+    border: 1px solid rgba(74,222,128,0.25);
+    color: var(--win);
+    font-weight: 600; font-size: 12px; letter-spacing: 0.06em;
+  }
+  .refresh-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--ink);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .refresh-btn:hover { background: rgba(255,255,255,0.12); transform: rotate(180deg); }
+  .refresh-btn.spinning { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .streak-badge {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, rgba(201,169,97,0.15), rgba(201,169,97,0.05));
+    border: 1px solid rgba(201,169,97,0.3);
+    border-radius: 999px;
+    font-size: 13px; font-weight: 600;
+    color: var(--gold);
+  }
+  .streak-badge .fire { font-size: 16px; }
+
+  /* Layout */
+  main {
+    position: relative; z-index: 2;
+    max-width: 1280px; margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 40px 20px 30px;
+    position: relative;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    color: var(--gold);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px; letter-spacing: 0.4em;
+    margin-bottom: 16px;
+    padding: 6px 18px;
+    border: 1px solid rgba(201,169,97,0.4);
+    border-radius: 999px;
+    background: rgba(201,169,97,0.06);
+  }
+  .hero-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(28px, 5vw, 52px);
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    margin: 0;
+    text-shadow: 0 2px 30px rgba(58,111,255,0.4);
+  }
+  .hero-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(180px, 32vw, 380px);
+    line-height: 0.85;
+    margin: 12px 0 8px;
+    background: linear-gradient(180deg, #ffffff 0%, #b6c8ff 50%, #5a78d4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 8px 60px rgba(58,111,255,0.5));
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .hero-number.celebrate { animation: punch 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes punch {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.1); filter: drop-shadow(0 8px 80px rgba(255,200,100,0.7)); }
+    100% { transform: scale(1); }
+  }
+  .hero-sublabel {
+    font-size: clamp(14px, 1.6vw, 18px);
+    color: var(--ink-dim);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .hero-sublabel strong { color: var(--ink); }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 36px auto 0;
+    max-width: 720px;
+  }
+  .meta-card {
+    padding: 16px 12px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+  }
+  .meta-label {
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .meta-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px; font-weight: 700;
+    color: var(--ink);
+  }
+  .meta-value.win-streak { color: var(--win); }
+  .meta-value.loss-streak { color: var(--loss); }
+
+  /* Section heads */
+  .section { margin-top: 56px; }
+  .section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 0.16em;
+    color: var(--ink);
+    margin: 0 0 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .section h2::before {
+    content: ''; width: 4px; height: 22px;
+    background: linear-gradient(180deg, var(--cubs-red), var(--gold));
+    border-radius: 2px;
+  }
+  .section h2 .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em;
+    margin-left: auto; font-weight: 500;
+  }
+
+  /* Next game card */
+  .next-game-card {
+    background:
+      linear-gradient(135deg, rgba(14,51,134,0.5), rgba(204,52,51,0.18)),
+      var(--card);
+    border: 1px solid rgba(58,111,255,0.3);
+    border-radius: 20px;
+    padding: 28px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    box-shadow: 0 12px 40px rgba(14,51,134,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .next-game-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(58,111,255,0.25), transparent 60%);
+    pointer-events: none;
+  }
+  .next-game-info { position: relative; z-index: 1; }
+  .next-game-label {
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700; margin-bottom: 8px;
+  }
+  .next-game-matchup {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(28px, 4vw, 44px);
+    letter-spacing: 0.04em;
+    line-height: 1.0;
+  }
+  .next-game-matchup .vs { color: var(--ink-faint); margin: 0 12px; font-size: 0.7em; }
+  .next-game-when {
+    color: var(--ink-dim); font-size: 14px; margin-top: 8px;
+    font-weight: 500;
+  }
+  .next-game-countdown {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 700;
+    text-align: right;
+    position: relative; z-index: 1;
+  }
+  .next-game-countdown small {
+    display: block;
+    font-size: 11px; color: var(--ink-faint);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 4px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Standings */
+  .standings-table {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+  }
+  .standings-row {
+    display: grid;
+    grid-template-columns: 32px 1fr 60px 60px 70px 80px 1fr;
+    gap: 16px;
+    padding: 14px 22px;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.2s;
+  }
+  .standings-row:last-child { border-bottom: none; }
+  .standings-row.header {
+    background: rgba(255,255,255,0.03);
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+  }
+  .standings-row.cubs {
+    background: linear-gradient(90deg, rgba(204,52,51,0.12), rgba(14,51,134,0.18));
+    border-left: 3px solid var(--cubs-red);
+    padding-left: 19px;
+  }
+  .standings-row .rank {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-faint); font-weight: 700;
+  }
+  .standings-row .team-name {
+    font-weight: 600; font-size: 15px;
+  }
+  .standings-row.cubs .team-name { color: var(--cream); }
+  .standings-row .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600; font-size: 15px;
+  }
+  .standings-row .gb { color: var(--ink-dim); }
+  .standings-row.cubs .gb { color: var(--gold); font-weight: 700; }
+  .pace-bar {
+    height: 6px; border-radius: 3px;
+    background: rgba(255,255,255,0.06); overflow: hidden;
+    position: relative;
+  }
+  .pace-bar-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--cubs-blue-glow), var(--ivy-bright));
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .standings-row.cubs .pace-bar-fill {
+    background: linear-gradient(90deg, var(--cubs-red), var(--gold));
+  }
+
+  /* Games */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .game-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    backdrop-filter: blur(8px);
+    transition: all 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .game-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+  }
+  .game-card.win {
+    border-color: rgba(74,222,128,0.3);
+    background: linear-gradient(135deg, rgba(74,222,128,0.08), var(--card));
+  }
+  .game-card.loss {
+    border-color: rgba(239,68,68,0.25);
+    background: linear-gradient(135deg, rgba(239,68,68,0.06), var(--card));
+  }
+  .game-result {
+    position: absolute; top: 14px; right: 14px;
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; letter-spacing: 0;
+    line-height: 1;
+    padding-top: 3px;
+  }
+  .game-result.W { background: var(--cubs-blue); color: var(--cream); border: 2px solid var(--cream); box-shadow: 0 0 16px rgba(58,111,255,0.6); }
+  .game-result.L { background: rgba(255,255,255,0.06); color: var(--ink-faint); border: 1px solid rgba(255,255,255,0.1); }
+  .game-date {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .game-opp {
+    font-size: 18px; font-weight: 700; margin-bottom: 6px;
+  }
+  .game-opp .at { color: var(--ink-faint); font-weight: 500; margin-right: 6px; }
+  .game-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px; font-weight: 700;
+    color: var(--ink);
+  }
+  .game-score .opp-score { color: var(--ink-dim); }
+  .game-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px; color: var(--ink-dim);
+    font-weight: 600;
+  }
+  .game-status {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700;
+  }
+  .game-card.live {
+    border-color: rgba(255, 200, 100, 0.5);
+    animation: liveglow 2s ease-in-out infinite alternate;
+  }
+  @keyframes liveglow {
+    from { box-shadow: 0 0 0 rgba(255,200,100,0); }
+    to { box-shadow: 0 0 24px rgba(255,200,100,0.3); }
+  }
+
+  /* Last 10 strip */
+  .last10-strip {
+    display: flex; gap: 6px; margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .last10-pill {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px; font-weight: 700;
+    line-height: 1;
+    padding-top: 2px;
+  }
+  .last10-pill.W { background: var(--cubs-blue); color: var(--cream); border: 1.5px solid var(--cream); }
+  .last10-pill.L { background: rgba(255,255,255,0.05); color: var(--ink-faint); border: 1px solid rgba(255,255,255,0.1); }
+
+  /* Fly the W */
+  .fly-w {
+    margin-top: 64px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 18px;
+  }
+  .w-flag {
+    background: var(--cream);
+    border: none;
+    width: 180px; height: 120px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 8% 50%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 30px rgba(255,255,255,0.15);
+  }
+  .w-flag:hover { transform: scale(1.05) rotate(-2deg); }
+  .w-flag span {
+    font-family: 'Bebas Neue', sans-serif;
+    color: var(--cubs-blue);
+    font-size: 88px;
+    line-height: 1;
+    margin-left: 12px;
+    text-shadow: 0 2px 0 rgba(14,51,134,0.2);
+  }
+  .w-flag.flying { animation: flutter 0.8s ease-in-out 2; }
+  @keyframes flutter {
+    0%, 100% { transform: scale(1.1) rotate(-3deg) translateY(-6px); }
+    50% { transform: scale(1.1) rotate(3deg) translateY(6px); }
+  }
+  .fly-w-caption { color: var(--ink-dim); font-size: 14px; font-weight: 500; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: linear-gradient(135deg, var(--cubs-blue), var(--cubs-red));
+    color: var(--cream);
+    padding: 14px 24px;
+    border-radius: 999px;
+    font-weight: 700; font-size: 14px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.5);
+    z-index: 100;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Footer */
+  footer {
+    position: relative; z-index: 2;
+    max-width: 1280px; margin: 0 auto;
+    padding: 24px 24px 40px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 12px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: 32px;
+  }
+  footer a { color: var(--ink-dim); }
+
+  /* Loading skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+
+  #confetti-canvas {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 99;
+  }
+
+  @media (max-width: 720px) {
+    .topbar { padding: 12px 16px; }
+    main { padding: 20px 14px 60px; }
+    .hero { padding: 24px 8px 16px; }
+    .hero-meta { grid-template-columns: repeat(2, 1fr); }
+    .standings-row { grid-template-columns: 28px 1fr 50px 50px 60px; gap: 8px; padding: 12px 14px; font-size: 13px; }
+    .standings-row .pct, .standings-row .pace-bar { display: none; }
+    .next-game-card { padding: 20px; }
+    .next-game-countdown { text-align: left; }
+  }
+</style>
+</head>
+<body>
+  <div class="ivy tl"></div>
+  <div class="ivy br"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="c-logo">C</span>
+      <div class="brand-text">
+        Magic Number
+        <small>Cubs Countdown · 2026</small>
+      </div>
+    </div>
+    <div class="status">
+      <span class="live-pill"><span class="live-dot"></span> LIVE</span>
+      <span id="last-updated">Loading…</span>
+      <button class="refresh-btn" id="refresh-btn" title="Refresh now">↻</button>
+    </div>
+    <div class="streak-badge" id="streak-badge" title="Daily check-in streak">
+      <span class="fire">🔥</span>
+      <span><span id="streak-count">1</span> day streak</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-eyebrow">It's never too early</div>
+      <h1 class="hero-label" id="hero-label">Magic Number</h1>
+      <div class="hero-number" id="magic-number">···</div>
+      <div class="hero-sublabel" id="magic-context">Crunching the latest from the diamond…</div>
+
+      <div class="hero-meta">
+        <div class="meta-card">
+          <div class="meta-label">Record</div>
+          <div class="meta-value" id="m-record">—</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label">Win %</div>
+          <div class="meta-value" id="m-pct">—</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label">Streak</div>
+          <div class="meta-value" id="m-streak">—</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label">Last 10</div>
+          <div class="meta-value" id="m-last10">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="next-game-section" style="display:none;">
+      <h2>Next Up</h2>
+      <div id="next-game-content"></div>
+    </section>
+
+    <section class="section">
+      <h2>NL Central <span class="count" id="standings-count"></span></h2>
+      <div class="standings-table" id="standings-table"></div>
+    </section>
+
+    <section class="section">
+      <h2>Recent Results <span class="count" id="recent-count"></span></h2>
+      <div class="games-grid" id="recent-games"></div>
+    </section>
+
+    <section class="section">
+      <h2>Coming Up <span class="count" id="upcoming-count"></span></h2>
+      <div class="games-grid" id="upcoming-games"></div>
+    </section>
+
+    <section class="fly-w">
+      <button class="w-flag" id="w-flag" aria-label="Fly the W">
+        <span>W</span>
+      </button>
+      <div class="fly-w-caption">Click to fly the W · auto-flies on every Cubs win</div>
+    </section>
+  </main>
+
+  <footer>
+    Data: <a href="https://statsapi.mlb.com" target="_blank" rel="noopener">MLB Stats API</a> ·
+    Refreshes every 60 seconds · Hot-takes are 100% your own.<br>
+    Not affiliated with the Chicago Cubs or Major League Baseball.
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <canvas id="confetti-canvas"></canvas>
+
+<script>
+  // ---------- Constants ----------
+  const TEAM_ID = 112; // Chicago Cubs
+  const NL_CENTRAL_DIV_ID = 205;
+  const NL_LEAGUE_ID = 104;
+  const TOTAL_GAMES = 162;
+  const SEASON = new Date().getFullYear();
+  const REFRESH_MS = 60_000;
+
+  const TEAM_ABBR = {
+    112: 'CUBS', 134: 'PIRATES', 138: 'CARDINALS', 158: 'BREWERS', 113: 'REDS'
+  };
+
+  // ---------- DOM ----------
+  const $ = (id) => document.getElementById(id);
+  const heroNumber = $('magic-number');
+  const heroContext = $('magic-context');
+  const heroLabel = $('hero-label');
+
+  // ---------- Daily-streak (localStorage) ----------
+  function updateDailyStreak() {
+    const today = new Date().toDateString();
+    const last = localStorage.getItem('cubs-last-visit');
+    let streak = parseInt(localStorage.getItem('cubs-streak') || '0', 10);
+    if (last !== today) {
+      if (last) {
+        const diff = Math.floor((Date.now() - new Date(last).getTime()) / 86400000);
+        streak = diff === 1 ? streak + 1 : 1;
+      } else streak = 1;
+      localStorage.setItem('cubs-last-visit', today);
+      localStorage.setItem('cubs-streak', String(streak));
+    } else if (streak < 1) {
+      streak = 1;
+      localStorage.setItem('cubs-streak', '1');
+    }
+    $('streak-count').textContent = streak;
+    if (streak >= 7) $('streak-badge').style.background = 'linear-gradient(135deg, rgba(204,52,51,0.25), rgba(201,169,97,0.15))';
+    return streak;
+  }
+
+  // ---------- Date helpers ----------
+  function fmtDate(d) {
+    const dt = new Date(d);
+    return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  function fmtTime(d) {
+    const dt = new Date(d);
+    return dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
+  function isoDate(d) {
+    return new Date(d).toISOString().split('T')[0];
+  }
+
+  // ---------- API ----------
+  async function fetchStandings() {
+    const url = `https://statsapi.mlb.com/api/v1/standings?leagueId=${NL_LEAGUE_ID}&season=${SEASON}&standingsTypes=regularSeason`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('standings ' + r.status);
+    return r.json();
+  }
+  async function fetchSchedule(startDate, endDate) {
+    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${startDate}&endDate=${endDate}&hydrate=team,linescore,decisions`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('schedule ' + r.status);
+    return r.json();
+  }
+
+  // ---------- Helpers ----------
+  function shortName(team) {
+    if (!team) return 'the field';
+    if (team.teamName) return team.teamName;
+    if (team.name) {
+      const parts = team.name.split(' ');
+      return parts[parts.length - 1];
+    }
+    return 'the field';
+  }
+
+  // ---------- Magic number math ----------
+  function computeMagic(nlCentralRecords) {
+    const winPct = t => t.wins / Math.max(1, t.wins + t.losses);
+    const sorted = [...nlCentralRecords].sort((a, b) =>
+      winPct(b) - winPct(a) || b.wins - a.wins || a.losses - b.losses
+    );
+    const cubs = sorted.find(t => t.team.id === TEAM_ID);
+    const leader = sorted[0];
+    const isLeader = leader.team.id === TEAM_ID;
+    const chaser = isLeader ? sorted[1] : leader;
+
+    const magicToClinch = Math.max(0, (TOTAL_GAMES + 1) - cubs.wins - chaser.losses);
+    const tragicNumber = isLeader
+      ? null
+      : Math.max(0, (TOTAL_GAMES + 1) - leader.wins - cubs.losses);
+
+    return { sorted, cubs, leader, chaser, isLeader, magicToClinch, tragicNumber };
+  }
+
+  // ---------- Render: Hero ----------
+  let lastMagic = null;
+  function renderHero(state) {
+    const { cubs, isLeader, magicToClinch, leader, chaser, tragicNumber } = state;
+
+    let displayNumber, contextHtml, label;
+
+    if (isLeader) {
+      displayNumber = magicToClinch;
+      label = 'Magic Number';
+      const teamWord = chaser ? shortName(chaser.team) : 'the field';
+      contextHtml = `Any combination of <strong>Cubs wins</strong> and <strong>${teamWord} losses</strong> totaling
+        <strong>${magicToClinch}</strong> clinches the NL Central.`;
+    } else {
+      // Cubs trailing — show "games to overtake the leader" (chase number) as the headline
+      const chase = Math.max(0, leader.wins - cubs.wins) + 1;
+      displayNumber = chase;
+      label = 'Chase Number';
+      contextHtml = `Cubs trail the <strong>${shortName(leader.team)}</strong> by
+        <strong>${cubs.gamesBack || (leader.wins - cubs.wins) + ' GB'}</strong>.
+        Take the division lead, and the magic number begins.
+        ${tragicNumber !== null ? `Elimination number: <strong>${tragicNumber}</strong>.` : ''}`;
+    }
+
+    heroLabel.textContent = label;
+    heroContext.innerHTML = contextHtml;
+    animateNumber(heroNumber, displayNumber);
+
+    if (lastMagic !== null && displayNumber < lastMagic) {
+      heroNumber.classList.remove('celebrate');
+      void heroNumber.offsetWidth;
+      heroNumber.classList.add('celebrate');
+    }
+    lastMagic = displayNumber;
+  }
+
+  function animateNumber(el, target) {
+    const current = parseInt(el.textContent.replace(/\D/g, ''), 10);
+    if (Number.isFinite(current) && current === target) return;
+    const start = Number.isFinite(current) ? current : target + 12;
+    const dur = 700, t0 = performance.now();
+    function step(t) {
+      const p = Math.min(1, (t - t0) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const v = Math.round(start + (target - start) * eased);
+      el.textContent = v;
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target;
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ---------- Render: meta cards ----------
+  function renderMeta(cubs, recentGames) {
+    $('m-record').textContent = `${cubs.wins}-${cubs.losses}`;
+    $('m-pct').textContent = (cubs.winningPercentage || (cubs.wins / Math.max(1, cubs.wins + cubs.losses)).toFixed(3));
+
+    const streak = cubs.streak || {};
+    const streakStr = streak.streakCode || '—';
+    const streakEl = $('m-streak');
+    streakEl.textContent = streakStr;
+    streakEl.className = 'meta-value';
+    if (streakStr.startsWith('W')) streakEl.classList.add('win-streak');
+    else if (streakStr.startsWith('L')) streakEl.classList.add('loss-streak');
+
+    // Last 10 from records
+    let last10 = '—';
+    if (cubs.records && cubs.records.splitRecords) {
+      const l10 = cubs.records.splitRecords.find(r => r.type === 'lastTen');
+      if (l10) last10 = `${l10.wins}-${l10.losses}`;
+    } else if (recentGames && recentGames.length) {
+      const last = recentGames.slice(-10);
+      const w = last.filter(g => g.result === 'W').length;
+      last10 = `${w}-${last.length - w}`;
+    }
+    $('m-last10').textContent = last10;
+  }
+
+  // ---------- Render: standings ----------
+  function renderStandings(sorted) {
+    const tbl = $('standings-table');
+    const maxWins = Math.max(...sorted.map(t => t.wins), 1);
+    const header = `
+      <div class="standings-row header">
+        <div class="rank">#</div>
+        <div>Team</div>
+        <div class="num">W</div>
+        <div class="num">L</div>
+        <div class="num pct">PCT</div>
+        <div class="num gb">GB</div>
+        <div class="pace-bar-cell"></div>
+      </div>`;
+    const rows = sorted.map((t, i) => {
+      const isCubs = t.team.id === TEAM_ID;
+      const pct = (t.wins / Math.max(1, t.wins + t.losses)).toFixed(3).replace(/^0/, '');
+      const gb = i === 0 ? '—' : (t.gamesBack || '—');
+      const pacePct = (t.wins / maxWins) * 100;
+      return `
+        <div class="standings-row ${isCubs ? 'cubs' : ''}">
+          <div class="rank">${i + 1}</div>
+          <div class="team-name">${t.team.name}${isCubs ? ' ⚾' : ''}</div>
+          <div class="num">${t.wins}</div>
+          <div class="num">${t.losses}</div>
+          <div class="num pct">${pct}</div>
+          <div class="num gb">${gb}</div>
+          <div class="pace-bar"><div class="pace-bar-fill" style="width:${pacePct}%"></div></div>
+        </div>`;
+    }).join('');
+    tbl.innerHTML = header + rows;
+    $('standings-count').textContent = `${sorted.length} TEAMS`;
+  }
+
+  // ---------- Games ----------
+  function classifyGame(g) {
+    const isHome = g.teams.home.team.id === TEAM_ID;
+    const cubsSide = isHome ? g.teams.home : g.teams.away;
+    const oppSide = isHome ? g.teams.away : g.teams.home;
+    const status = g.status.detailedState;
+    const codedState = g.status.codedGameState;
+    const isFinal = ['F', 'O'].includes(codedState) || /Final|Game Over|Completed Early/.test(status);
+    const isLive = ['I', 'M', 'P'].includes(codedState) && !isFinal;
+    let result = null;
+    if (isFinal && cubsSide.score != null && oppSide.score != null) {
+      result = cubsSide.score > oppSide.score ? 'W' : (cubsSide.score < oppSide.score ? 'L' : 'T');
+    }
+    return {
+      raw: g, isHome, cubsSide, oppSide, status, codedState, isFinal, isLive, result,
+      date: g.gameDate
+    };
+  }
+
+  function renderGameCard(c) {
+    const oppName = c.oppSide.team.teamName || c.oppSide.team.name;
+    let scoreOrTime;
+    if (c.isFinal) {
+      scoreOrTime = `<div class="game-score">${c.cubsSide.score}–<span class="opp-score">${c.oppSide.score}</span></div>`;
+    } else if (c.isLive) {
+      scoreOrTime = `
+        <div class="game-score">${c.cubsSide.score ?? 0}–<span class="opp-score">${c.oppSide.score ?? 0}</span></div>
+        <span class="game-status">● ${c.status}</span>`;
+    } else {
+      scoreOrTime = `<div class="game-time">${fmtTime(c.date)}</div>`;
+    }
+    const cls = c.isLive ? 'live' : (c.result === 'W' ? 'win' : (c.result === 'L' ? 'loss' : ''));
+    const resultBadge = c.result ? `<div class="game-result ${c.result}">${c.result}</div>` : '';
+    return `
+      <div class="game-card ${cls}">
+        ${resultBadge}
+        <div class="game-date">${fmtDate(c.date)}</div>
+        <div class="game-opp"><span class="at">${c.isHome ? 'vs' : '@'}</span>${oppName}</div>
+        ${scoreOrTime}
+      </div>`;
+  }
+
+  function renderGames(recentClassified, upcomingClassified) {
+    const r = $('recent-games');
+    const u = $('upcoming-games');
+    if (recentClassified.length === 0) {
+      r.innerHTML = `<div style="color:var(--ink-dim); padding:14px;">No recent games yet — opening day is right around the corner.</div>`;
+    } else {
+      r.innerHTML = recentClassified.slice().reverse().map(renderGameCard).join('');
+    }
+    if (upcomingClassified.length === 0) {
+      u.innerHTML = `<div style="color:var(--ink-dim); padding:14px;">Schedule fully played — see you next season!</div>`;
+    } else {
+      u.innerHTML = upcomingClassified.map(renderGameCard).join('');
+    }
+    $('recent-count').textContent = `${recentClassified.length} GAMES`;
+    $('upcoming-count').textContent = `${upcomingClassified.length} GAMES`;
+  }
+
+  // ---------- Next game card ----------
+  let countdownTimer = null;
+  function renderNextGame(nextClassified) {
+    const sec = $('next-game-section');
+    if (!nextClassified) { sec.style.display = 'none'; return; }
+    sec.style.display = 'block';
+    const c = nextClassified;
+    const oppName = c.oppSide.team.name;
+    const matchup = c.isHome
+      ? `Cubs <span class="vs">vs</span> ${oppName}`
+      : `Cubs <span class="vs">@</span> ${oppName}`;
+    const when = `${fmtDate(c.date)} · ${fmtTime(c.date)}`;
+
+    const html = `
+      <div class="next-game-card">
+        <div class="next-game-info">
+          <div class="next-game-label">${c.isLive ? 'GAME IN PROGRESS' : 'Next Game'}</div>
+          <div class="next-game-matchup">${matchup}</div>
+          <div class="next-game-when">${when}${c.raw.venue ? ' · ' + c.raw.venue.name : ''}</div>
+        </div>
+        <div class="next-game-countdown" id="countdown">
+          <small>${c.isLive ? 'STATUS' : 'First pitch in'}</small>
+          <span id="countdown-value">${c.isLive ? c.status : '—'}</span>
+        </div>
+      </div>`;
+    $('next-game-content').innerHTML = html;
+
+    if (countdownTimer) clearInterval(countdownTimer);
+    if (c.isLive) return;
+    const target = new Date(c.date).getTime();
+    const tick = () => {
+      const diff = target - Date.now();
+      if (diff <= 0) { $('countdown-value').textContent = 'Underway'; clearInterval(countdownTimer); return; }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      const cd = $('countdown-value');
+      if (cd) cd.textContent = d > 0 ? `${d}d ${h}h ${m}m` : `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    };
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+  }
+
+  // ---------- Confetti & W flag ----------
+  const canvas = $('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  function sizeCanvas() { canvas.width = innerWidth; canvas.height = innerHeight; }
+  sizeCanvas(); addEventListener('resize', sizeCanvas);
+
+  function confetti(burstSize = 140) {
+    const colors = ['#0E3386', '#CC3433', '#FAF6E9', '#C9A961', '#3a6fff', '#4ade80'];
+    const particles = [];
+    for (let i = 0; i < burstSize; i++) {
+      particles.push({
+        x: innerWidth / 2 + (Math.random() - 0.5) * 200,
+        y: innerHeight / 2,
+        vx: (Math.random() - 0.5) * 14,
+        vy: -Math.random() * 16 - 6,
+        g: 0.45 + Math.random() * 0.2,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.3,
+        size: 6 + Math.random() * 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: 0
+      });
+    }
+    let frame = 0;
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = 0;
+      for (const p of particles) {
+        p.vy += p.g;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        p.life++;
+        if (p.y < canvas.height + 50 && p.life < 220) {
+          alive++;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+          ctx.restore();
+        }
+      }
+      frame++;
+      if (alive > 0 && frame < 280) requestAnimationFrame(draw);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    requestAnimationFrame(draw);
+  }
+
+  function flyTheW(loud = false) {
+    const flag = $('w-flag');
+    flag.classList.remove('flying');
+    void flag.offsetWidth;
+    flag.classList.add('flying');
+    if (loud) {
+      confetti(180);
+      toast('🎉 FLY THE W!');
+    }
+  }
+
+  // ---------- Toast ----------
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  // ---------- Last 10 / streak detection from games ----------
+  function detectFreshWin(recentClassified) {
+    if (!recentClassified.length) return false;
+    const lastFinal = [...recentClassified].reverse().find(g => g.isFinal && g.result);
+    if (!lastFinal) return false;
+    const key = `cubs-last-final-${lastFinal.raw.gamePk}`;
+    const seen = localStorage.getItem('cubs-last-final-seen');
+    const isNew = seen !== key;
+    localStorage.setItem('cubs-last-final-seen', key);
+    return isNew && lastFinal.result === 'W';
+  }
+
+  // ---------- Last updated ----------
+  function setLastUpdated() {
+    const now = new Date();
+    $('last-updated').textContent = `Updated ${now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`;
+  }
+
+  // ---------- Errors ----------
+  function showError(err) {
+    console.error(err);
+    heroNumber.textContent = '—';
+    heroContext.innerHTML = `Couldn't reach the MLB Stats API just now. <button class="refresh-btn" onclick="loadAll()" style="vertical-align:middle;display:inline-flex;width:28px;height:28px;">↻</button>`;
+    toast('⚠️ Connection hiccup — try refreshing');
+  }
+
+  // ---------- Main loader ----------
+  let firstLoad = true;
+  async function loadAll() {
+    const btn = $('refresh-btn');
+    btn.classList.add('spinning');
+    try {
+      // 21 days back, 14 days forward — gives a fat recent + upcoming window.
+      const start = new Date(); start.setDate(start.getDate() - 21);
+      const end = new Date(); end.setDate(end.getDate() + 14);
+
+      const [standings, schedule] = await Promise.all([
+        fetchStandings(),
+        fetchSchedule(isoDate(start), isoDate(end))
+      ]);
+
+      // Standings: NL Central
+      const nlCentral = standings.records.find(r => r.division.id === NL_CENTRAL_DIV_ID);
+      if (!nlCentral) throw new Error('NL Central not found');
+
+      const state = computeMagic(nlCentral.teamRecords);
+
+      // Games
+      const allGames = [];
+      (schedule.dates || []).forEach(day => {
+        (day.games || []).forEach(g => allGames.push(classifyGame(g)));
+      });
+      allGames.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      const now = Date.now();
+      const recent = allGames.filter(g => g.isFinal).slice(-10);
+      const live = allGames.filter(g => g.isLive);
+      const upcoming = allGames.filter(g => !g.isFinal && !g.isLive && new Date(g.date).getTime() >= now - 60000).slice(0, 8);
+
+      // Pump it all out
+      renderHero(state);
+      renderMeta(state.cubs, recent);
+      renderStandings(state.sorted);
+      renderGames(recent, upcoming);
+      const next = live[0] || upcoming[0] || null;
+      renderNextGame(next);
+
+      setLastUpdated();
+
+      if (!firstLoad && detectFreshWin(allGames.filter(g => g.isFinal))) {
+        flyTheW(true);
+      }
+      firstLoad = false;
+    } catch (e) {
+      showError(e);
+    } finally {
+      setTimeout(() => btn.classList.remove('spinning'), 400);
+    }
+  }
+
+  // ---------- Wire up ----------
+  $('refresh-btn').addEventListener('click', () => loadAll());
+  $('w-flag').addEventListener('click', () => flyTheW(true));
+
+  // Easter egg: 7th-inning stretch hint between 7 and 8 p.m. CT-ish
+  setTimeout(() => {
+    const h = new Date().getHours();
+    if (h === 19) toast('🎵 Take me out to the ball game…');
+  }, 1500);
+
+  updateDailyStreak();
+  loadAll();
+  setInterval(loadAll, REFRESH_MS);
+</script>
+</body>
+</html>
