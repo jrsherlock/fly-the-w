@@ -1,3 +1,6 @@
 .DS_Store
 *.log
 .claude/
+
+# Original (uncropped) source PNG — not used by the site
+Chicago-Cubs-Logo.png
