@@ -478,6 +478,160 @@
     to { box-shadow: 0 0 24px rgba(255,200,100,0.3); }
   }
 
+  /* Decisions / probables / highlights button */
+  .game-decisions {
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+  .dec-w { color: var(--win); font-weight: 700; }
+  .dec-l { color: var(--loss); font-weight: 700; }
+  .dec-s { color: var(--gold); font-weight: 700; }
+  .probables {
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    font-weight: 600;
+  }
+  .probables .vs-mini { color: var(--ink-faint); margin: 0 4px; }
+  .highlights-btn {
+    margin-top: 12px;
+    width: 100%;
+    background: rgba(58,111,255,0.1);
+    border: 1px solid rgba(58,111,255,0.25);
+    color: var(--ink);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    padding: 7px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .highlights-btn:hover {
+    background: rgba(58,111,255,0.2);
+    border-color: rgba(58,111,255,0.5);
+    transform: translateY(-1px);
+  }
+  .highlights-btn:disabled { opacity: 0.5; cursor: progress; }
+
+  /* Highlights modal */
+  .hl-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(2, 4, 14, 0.78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: none;
+    align-items: flex-start; justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .hl-overlay.show { display: flex; opacity: 1; }
+  .hl-modal {
+    background: linear-gradient(180deg, var(--bg-1), var(--bg-0));
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    width: min(960px, 100%);
+    padding: 24px 28px 28px;
+    box-shadow: 0 30px 90px rgba(0,0,0,0.6);
+    position: relative;
+  }
+  .hl-close {
+    position: absolute; top: 14px; right: 14px;
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--ink);
+    border-radius: 50%;
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .hl-close:hover { background: rgba(255,255,255,0.14); }
+  .hl-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 0.14em;
+    margin: 0 36px 4px 0;
+  }
+  .hl-sub {
+    font-size: 12px; color: var(--ink-dim);
+    margin-bottom: 18px; letter-spacing: 0.04em;
+  }
+  .hl-player {
+    background: black;
+    border-radius: 12px; overflow: hidden;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-faint); font-size: 13px;
+  }
+  .hl-player video { width: 100%; height: 100%; display: block; }
+  .hl-now-title {
+    font-size: 14px; font-weight: 700; margin: 0 0 4px;
+  }
+  .hl-now-blurb {
+    font-size: 13px; color: var(--ink-dim); margin: 0 0 18px;
+    line-height: 1.5;
+  }
+  .hl-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .hl-item {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    color: var(--ink);
+    font: inherit;
+    transition: all 0.2s;
+  }
+  .hl-item:hover { border-color: rgba(58,111,255,0.5); transform: translateY(-2px); }
+  .hl-item.active { border-color: var(--cubs-red); box-shadow: 0 0 0 2px rgba(204,52,51,0.3); }
+  .hl-thumb {
+    width: 100%; aspect-ratio: 16 / 9;
+    background-size: cover; background-position: center;
+    background-color: rgba(255,255,255,0.04);
+    position: relative;
+  }
+  .hl-thumb::after {
+    content: '▶'; position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: white; font-size: 26px;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.7);
+    opacity: 0.8;
+  }
+  .hl-item-title {
+    padding: 8px 10px;
+    font-size: 12px; line-height: 1.35;
+    font-weight: 600;
+  }
+  .hl-empty {
+    text-align: center;
+    color: var(--ink-dim);
+    padding: 30px 20px;
+    font-size: 14px;
+  }
+  .hl-loading {
+    text-align: center;
+    color: var(--ink-dim);
+    padding: 30px 20px;
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
   /* Last 10 strip */
   .last10-strip {
     display: flex; gap: 6px; margin-top: 10px;
@@ -670,6 +824,15 @@
   <div class="toast" id="toast"></div>
   <canvas id="confetti-canvas"></canvas>
 
+  <div class="hl-overlay" id="hl-overlay" role="dialog" aria-modal="true" aria-labelledby="hl-title">
+    <div class="hl-modal" id="hl-modal">
+      <button class="hl-close" id="hl-close" aria-label="Close highlights">×</button>
+      <h3 class="hl-title" id="hl-title">Highlights</h3>
+      <div class="hl-sub" id="hl-sub"></div>
+      <div id="hl-body"></div>
+    </div>
+  </div>
+
 <script>
   // ---------- Constants ----------
   const TEAM_ID = 112; // Chicago Cubs
@@ -721,10 +884,49 @@
     return map;
   }
   async function fetchSchedule(startDate, endDate) {
-    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${startDate}&endDate=${endDate}&hydrate=team,linescore,decisions`;
+    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${startDate}&endDate=${endDate}&hydrate=team,linescore,decisions,probablePitcher`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('schedule ' + r.status);
     return r.json();
+  }
+
+  // Highlights: lazy-fetched per gamePk, cached for the session.
+  const highlightsCache = new Map();
+  async function fetchHighlights(gamePk) {
+    if (highlightsCache.has(gamePk)) return highlightsCache.get(gamePk);
+    const url = `https://statsapi.mlb.com/api/v1/game/${gamePk}/content`;
+    const p = fetch(url).then(r => {
+      if (!r.ok) throw new Error('content ' + r.status);
+      return r.json();
+    }).then(j => {
+      const items = j?.highlights?.highlights?.items || [];
+      return items.map(it => ({
+        id: it.id,
+        title: it.headline || it.title || 'Highlight',
+        blurb: it.description || it.blurb || '',
+        duration: it.duration || '',
+        thumb: pickThumb(it.image),
+        mp4: pickMp4(it.playbacks)
+      })).filter(h => h.mp4);
+    });
+    highlightsCache.set(gamePk, p);
+    return p;
+  }
+  function pickThumb(image) {
+    const cuts = image?.cuts || [];
+    // Prefer a mid-size cut around 320–480 wide; fall back to any.
+    const sorted = cuts.slice().sort((a, b) => Math.abs((a.width || 0) - 360) - Math.abs((b.width || 0) - 360));
+    return sorted[0]?.src || '';
+  }
+  function pickMp4(playbacks = []) {
+    // Prefer the highest reasonable mp4 (1800K ≈ 720p) so it streams clean on a laptop.
+    const mp4s = playbacks.filter(p => /mp4/i.test(p.name || '') && p.url);
+    const ranked = mp4s.sort((a, b) => bitrate(b) - bitrate(a));
+    return ranked.find(p => bitrate(p) <= 2400) ? ranked.find(p => bitrate(p) <= 2400).url : (ranked[0]?.url || '');
+  }
+  function bitrate(p) {
+    const m = (p.name || '').match(/(\d+)K/i);
+    return m ? parseInt(m[1], 10) : 0;
   }
 
   // ---------- Helpers ----------
@@ -915,6 +1117,12 @@
     };
   }
 
+  function lastName(fullName) {
+    if (!fullName) return '';
+    const parts = fullName.trim().split(/\s+/);
+    return parts.length === 1 ? parts[0] : `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
+  }
+
   function renderGameCard(c, recordMap) {
     const oppName = c.oppSide.team.teamName || c.oppSide.team.name;
     const oppRec = recordMap && recordMap[c.oppSide.team.id];
@@ -925,13 +1133,29 @@
       : '';
     let scoreOrTime;
     if (c.isFinal) {
-      scoreOrTime = `<div class="game-score">${c.cubsSide.score}–<span class="opp-score">${c.oppSide.score}</span></div>`;
+      const dec = c.raw.decisions || {};
+      const decBits = [];
+      if (dec.winner) decBits.push(`<span class="dec-w">W: ${lastName(dec.winner.fullName)}</span>`);
+      if (dec.loser) decBits.push(`<span class="dec-l">L: ${lastName(dec.loser.fullName)}</span>`);
+      if (dec.save) decBits.push(`<span class="dec-s">SV: ${lastName(dec.save.fullName)}</span>`);
+      const decRow = decBits.length ? `<div class="game-decisions">${decBits.join(' · ')}</div>` : '';
+      scoreOrTime = `
+        <div class="game-score">${c.cubsSide.score}–<span class="opp-score">${c.oppSide.score}</span></div>
+        ${decRow}
+        <button class="highlights-btn" data-gamepk="${c.raw.gamePk}">▶ Highlights</button>`;
     } else if (c.isLive) {
       scoreOrTime = `
         <div class="game-score">${c.cubsSide.score ?? 0}–<span class="opp-score">${c.oppSide.score ?? 0}</span></div>
         <span class="game-status">● ${c.status}</span>`;
     } else {
-      scoreOrTime = `<div class="game-time">${fmtTime(c.date)}</div>`;
+      const homeP = c.raw.teams.home.probablePitcher;
+      const awayP = c.raw.teams.away.probablePitcher;
+      const cubsP = c.isHome ? homeP : awayP;
+      const oppP = c.isHome ? awayP : homeP;
+      const probable = (cubsP || oppP)
+        ? `<div class="probables">${lastName(cubsP?.fullName) || 'TBD'} <span class="vs-mini">vs</span> ${lastName(oppP?.fullName) || 'TBD'}</div>`
+        : '';
+      scoreOrTime = `<div class="game-time">${fmtTime(c.date)}</div>${probable}`;
     }
     const cls = c.isLive ? 'live' : (c.result === 'W' ? 'win' : (c.result === 'L' ? 'loss' : ''));
     const resultBadge = c.result ? `<div class="game-result ${c.result}">${c.result}</div>` : '';
@@ -1161,9 +1385,83 @@
     }
   }
 
+  // ---------- Highlights modal ----------
+  const hlOverlay = $('hl-overlay');
+  function openHighlights(gamePk, btn) {
+    // Build a friendly subtitle from the card the button lives in.
+    const card = btn.closest('.game-card');
+    const date = card?.querySelector('.game-date')?.textContent || '';
+    const opp = card?.querySelector('.game-opp')?.textContent.trim() || '';
+    const score = card?.querySelector('.game-score')?.textContent || '';
+    $('hl-title').textContent = opp || 'Highlights';
+    $('hl-sub').textContent = [date, score].filter(Boolean).join(' · ');
+    $('hl-body').innerHTML = `<div class="hl-loading">Loading clips…</div>`;
+    hlOverlay.classList.add('show');
+
+    btn.disabled = true;
+    fetchHighlights(gamePk).then(clips => {
+      btn.disabled = false;
+      if (!clips.length) {
+        $('hl-body').innerHTML = `<div class="hl-empty">No highlights posted for this game yet.</div>`;
+        return;
+      }
+      renderHighlightsBody(clips);
+    }).catch(err => {
+      btn.disabled = false;
+      console.error(err);
+      $('hl-body').innerHTML = `<div class="hl-empty">Couldn't load highlights — try again later.</div>`;
+    });
+  }
+  function renderHighlightsBody(clips) {
+    const player = `
+      <div class="hl-player" id="hl-player">
+        <span>Pick a clip below to play</span>
+      </div>
+      <h4 class="hl-now-title" id="hl-now-title"></h4>
+      <p class="hl-now-blurb" id="hl-now-blurb"></p>`;
+    const list = `<div class="hl-list">${clips.map((c, i) => `
+      <button class="hl-item" data-idx="${i}">
+        <div class="hl-thumb" style="background-image:url('${c.thumb}')"></div>
+        <div class="hl-item-title">${c.title}</div>
+      </button>`).join('')}</div>`;
+    $('hl-body').innerHTML = player + list;
+    // Auto-play the first clip — that's why fans clicked.
+    playClip(clips, 0);
+    $('hl-body').addEventListener('click', e => {
+      const item = e.target.closest('.hl-item');
+      if (!item) return;
+      playClip(clips, parseInt(item.dataset.idx, 10));
+    });
+  }
+  function playClip(clips, idx) {
+    const c = clips[idx];
+    if (!c) return;
+    $('hl-player').innerHTML = `<video controls autoplay playsinline preload="metadata" src="${c.mp4}"></video>`;
+    $('hl-now-title').textContent = c.title;
+    $('hl-now-blurb').textContent = c.blurb || '';
+    document.querySelectorAll('.hl-item').forEach((el, i) => {
+      el.classList.toggle('active', i === idx);
+    });
+  }
+  function closeHighlights() {
+    hlOverlay.classList.remove('show');
+    // Stop any playing video so audio doesn't keep going.
+    const v = hlOverlay.querySelector('video');
+    if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
+  }
+
   // ---------- Wire up ----------
   $('refresh-btn').addEventListener('click', () => loadAll());
   $('w-flag').addEventListener('click', () => flyTheW(true));
+
+  // Delegate highlight-button clicks since cards are re-rendered every refresh.
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.highlights-btn');
+    if (btn) openHighlights(btn.dataset.gamepk, btn);
+  });
+  $('hl-close').addEventListener('click', closeHighlights);
+  hlOverlay.addEventListener('click', e => { if (e.target === hlOverlay) closeHighlights(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && hlOverlay.classList.contains('show')) closeHighlights(); });
 
   // Easter egg: 7th-inning stretch hint between 7 and 8 p.m. CT-ish
   setTimeout(() => {
