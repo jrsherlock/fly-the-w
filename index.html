@@ -576,6 +576,146 @@
   .live-ondeck strong { color: var(--ink); font-weight: 600; }
   .live-ondeck .arrow { color: var(--ink-faint); }
 
+  /* WP sparkline (live card) */
+  .live-wp-spark {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 10px;
+  }
+  .live-wp-spark .spark-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 4px;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+  }
+  .live-wp-spark .spark-meta {
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em; color: var(--ink-dim);
+  }
+  .live-wp-spark .spark-svg {
+    width: 100%; height: 56px; display: block;
+  }
+
+  /* Statcast hit-data pill */
+  .live-statcast {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(201,169,97,0.06);
+    border-left: 2px solid var(--gold);
+    border-radius: 0 6px 6px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .live-statcast small {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+  }
+  .live-statcast .velo { color: var(--ink); font-weight: 700; }
+  .live-statcast .velo.hot { color: var(--gold); }
+  .live-statcast .dist.hot { color: var(--win); font-weight: 700; }
+  .live-statcast .ptype { color: var(--ink); }
+  .live-statcast .sep { color: var(--ink-faint); }
+  .live-statcast.hr {
+    background: rgba(74,222,128,0.08);
+    border-left-color: var(--win);
+  }
+  .live-statcast.hr small { color: var(--win); }
+
+  /* Strike zone plot + last-pitch row layout */
+  .live-zone-row {
+    display: grid;
+    grid-template-columns: 144px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .live-zone-row .zone-meta {
+    display: flex; flex-direction: column;
+    gap: 8px; min-width: 0;
+  }
+  @media (max-width: 720px) {
+    .live-zone-row { grid-template-columns: 1fr; }
+  }
+  .live-zone {
+    display: flex; flex-direction: column; gap: 4px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 9px 10px;
+  }
+  .live-zone small {
+    font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+    text-align: center;
+  }
+  .live-zone .zone-svg {
+    width: 100%;
+    height: 140px;
+    display: block;
+  }
+  .live-zone .zone-legend {
+    display: flex; gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faint);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .live-zone .zone-legend .dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 3px;
+    vertical-align: 0;
+  }
+  .live-zone .zone-legend .dot.ball { background: var(--cubs-blue-glow); }
+  .live-zone .zone-legend .dot.strike { background: var(--loss); }
+  .live-zone .zone-legend .dot.inplay { background: var(--gold); }
+
+  /* NL Central live radar */
+  .nlc-radar {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 10px;
+  }
+  .nlc-game {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  .nlc-game.live {
+    border-color: rgba(255,200,100,0.4);
+    background: linear-gradient(135deg, rgba(204,52,51,0.10), var(--card));
+    animation: liveglow 2.4s ease-in-out infinite alternate;
+  }
+  .nlc-game.final { opacity: 0.78; }
+  .nlc-state {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .nlc-game.live .nlc-state { color: var(--cubs-red); }
+  .nlc-game.live .nlc-state::before { content: '● '; }
+  .nlc-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 2px 0;
+    color: var(--ink);
+  }
+  .nlc-row .abbr {
+    letter-spacing: 0.08em;
+    font-size: 12px;
+    color: var(--ink-dim); font-weight: 700;
+  }
+  .nlc-row .num { font-weight: 700; min-width: 1.4ch; text-align: right; }
+  .nlc-row.lead .num { color: var(--gold); }
+  .nlc-row.lead .abbr { color: var(--ink); }
+
   /* Win probability chart in highlights modal */
   .wp-chart {
     margin: 0 0 18px;
@@ -1069,6 +1209,11 @@
       <div id="next-game-content"></div>
     </section>
 
+    <section class="section" id="nlc-radar-section" style="display:none;">
+      <h2>NL Central Today <span class="count" id="nlc-count"></span></h2>
+      <div class="nlc-radar" id="nlc-radar"></div>
+    </section>
+
     <section class="section">
       <h2>NL Central <span class="count" id="standings-count"></span></h2>
       <div class="standings-table" id="standings-table"></div>
@@ -1178,6 +1323,18 @@
     const url = `https://statsapi.mlb.com/api/v1/game/${gamePk}/winProbability`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('wp ' + r.status);
+    return r.json();
+  }
+
+  // Today's slate for the four chasers + Cubs. We dedupe (intra-division
+  // matchups appear under both teams) and filter the Cubs game out before
+  // rendering, since it already has its own live card.
+  async function fetchNLCentralToday() {
+    const today = isoDate(new Date());
+    const teamIds = '113,134,138,158,112';
+    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${teamIds}&date=${today}&hydrate=team,linescore`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('nlc-today ' + r.status);
     return r.json();
   }
 
@@ -1549,6 +1706,235 @@
     return { type, velo, call, count: pitches.length };
   }
 
+  // Compact win-probability sparkline for the live card. Same data shape as
+  // buildWPChart (highlights modal) but smaller and headline-driven.
+  function wpSparklineHTML(wp, isHome) {
+    if (!Array.isArray(wp) || wp.length < 2) return '';
+    const pts = wp.map(p => {
+      const homeWP = p.homeTeamWinProbability;
+      if (homeWP == null) return null;
+      return isHome ? homeWP : (100 - homeWP);
+    }).filter(v => v != null);
+    if (pts.length < 2) return '';
+    const W = 600, H = 56, P = 4;
+    const xAt = i => P + (i / (pts.length - 1)) * (W - 2 * P);
+    const yAt = v => P + (1 - v / 100) * (H - 2 * P);
+    const path = pts.map((v, i) => `${i === 0 ? 'M' : 'L'}${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join('');
+    const area = path + ` L${xAt(pts.length - 1).toFixed(1)},${H} L${xAt(0).toFixed(1)},${H} Z`;
+    const final = pts[pts.length - 1];
+    const peak = Math.round(Math.max(...pts));
+    const valley = Math.round(Math.min(...pts));
+    const swing = peak - valley;
+    return `
+      <div class="live-wp-spark">
+        <div class="spark-header">
+          <small>Win-probability ride</small>
+          <span class="spark-meta">peak ${peak}% · low ${valley}% · ${swing}pt swing</span>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="spark-svg">
+          <line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="rgba(255,255,255,0.1)" stroke-dasharray="2 4"/>
+          <path d="${area}" fill="rgba(58,111,255,0.18)"/>
+          <path d="${path}" fill="none" stroke="var(--cubs-blue-glow)" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="${xAt(pts.length - 1).toFixed(1)}" cy="${yAt(final).toFixed(1)}" r="3.5" fill="${final >= 50 ? 'var(--win)' : 'var(--loss)'}"/>
+        </svg>
+      </div>`;
+  }
+
+  // Walk plays in reverse to find the most recent batted ball with Statcast
+  // hit data. Useful even after the AB ends — the badge sticks until the
+  // next batted ball.
+  function lastBattedBallSummary(allPlays) {
+    for (let i = allPlays.length - 1; i >= 0; i--) {
+      const events = allPlays[i].playEvents || [];
+      for (let j = events.length - 1; j >= 0; j--) {
+        const ev = events[j];
+        if (ev.hitData && (ev.hitData.launchSpeed != null || ev.hitData.totalDistance != null)) {
+          return { hitData: ev.hitData, play: allPlays[i] };
+        }
+      }
+    }
+    return null;
+  }
+  function statcastHTML(allPlays) {
+    const hit = lastBattedBallSummary(allPlays);
+    if (!hit) return '';
+    const { hitData, play } = hit;
+    const speed = hitData.launchSpeed;
+    const angle = hitData.launchAngle;
+    const dist = hitData.totalDistance;
+    const trajRaw = hitData.trajectory || '';
+    const traj = trajRaw.replace(/_/g, ' ').replace(/\b\w/g, m => m.toUpperCase());
+    const event = play.result?.event || '';
+    const batter = play.matchup?.batter?.fullName || '';
+    const isHR = /home_run/i.test(play.result?.eventType || '') || /Home Run/i.test(event);
+    const hard = speed != null && speed >= 95;
+
+    const bits = [];
+    if (speed != null) bits.push(`<span class="velo ${hard ? 'hot' : ''}">${speed.toFixed(1)} mph</span>`);
+    if (angle != null) bits.push(`<span>${angle.toFixed(0)}°</span>`);
+    if (dist != null && dist > 0) bits.push(`<span class="dist ${isHR ? 'hot' : ''}">${dist} ft</span>`);
+    if (traj) bits.push(`<span class="ptype">${traj}</span>`);
+    if (!bits.length) return '';
+
+    const headTail = batter ? ` · ${batter}` : '';
+    const eventTail = (!isHR && event) ? ` · ${event}` : '';
+    const heading = isHR ? `Home run${headTail}` : `Last contact${headTail}${eventTail}`;
+    return `
+      <div class="live-statcast ${isHR ? 'hr' : ''}">
+        <small>${heading}</small>
+        ${bits.join('<span class="sep">·</span>')}
+      </div>`;
+  }
+
+  // Strike zone with every pitch from the current at-bat plotted. Coordinates
+  // are in feet from the catcher's view: pX horizontal (plate is ±0.708 ft),
+  // pZ vertical from ground. strikeZoneTop/Bottom are per-batter and ride
+  // along with whoever's hitting.
+  function pitchZoneHTML(currentPlay) {
+    if (!currentPlay) return '';
+    const events = (currentPlay.playEvents || []).filter(e =>
+      e.isPitch && e.pitchData?.coordinates
+        && e.pitchData.coordinates.pX != null
+        && e.pitchData.coordinates.pZ != null
+    );
+    if (!events.length) return '';
+    const last = events[events.length - 1];
+    const top = last.pitchData.strikeZoneTop ?? 3.4;
+    const bot = last.pitchData.strikeZoneBottom ?? 1.6;
+
+    const W = 120, H = 140;
+    const vMin = bot - 1.4, vMax = top + 1.0;
+    const hMin = -1.7, hMax = 1.7;
+    const xAt = px => ((px - hMin) / (hMax - hMin)) * W;
+    const yAt = pz => H - ((pz - vMin) / (vMax - vMin)) * H;
+
+    const szLeft = xAt(-0.708);
+    const szRight = xAt(0.708);
+    const szTop = yAt(top);
+    const szBot = yAt(bot);
+    const w3 = (szRight - szLeft) / 3;
+    const h3 = (szBot - szTop) / 3;
+
+    const dots = events.slice(-12).map((e, idx, arr) => {
+      const c = e.pitchData.coordinates;
+      const x = xAt(c.pX);
+      const y = yAt(c.pZ);
+      const code = e.details?.code || '';
+      const inPlay = !!e.details?.isInPlay;
+      const isStrike = !!e.details?.isStrike;
+      const isBall = !!e.details?.isBall;
+      const isFoul = /^F/.test(code) && !inPlay;
+      let fill;
+      if (inPlay) fill = 'var(--gold)';
+      else if (isFoul) fill = 'var(--ink-dim)';
+      else if (isStrike) fill = 'var(--loss)';
+      else if (isBall) fill = 'var(--cubs-blue-glow)';
+      else fill = 'var(--ink-faint)';
+      const isLast = idx === arr.length - 1;
+      const tip = [
+        e.details?.type?.description,
+        e.pitchData?.startSpeed != null ? `${e.pitchData.startSpeed.toFixed(1)} mph` : '',
+        e.details?.description
+      ].filter(Boolean).join(' · ');
+      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isLast ? 5 : 3.5}" fill="${fill}" stroke="${isLast ? '#fff' : 'none'}" stroke-width="${isLast ? 1.4 : 0}" opacity="${isLast ? 1 : 0.78}"><title>${tip}</title></circle>`;
+    }).join('');
+
+    return `
+      <div class="live-zone">
+        <small>This AB · ${events.length} pitch${events.length === 1 ? '' : 'es'}</small>
+        <svg viewBox="0 0 ${W} ${H}" class="zone-svg">
+          <rect x="${szLeft.toFixed(1)}" y="${szTop.toFixed(1)}" width="${(szRight - szLeft).toFixed(1)}" height="${(szBot - szTop).toFixed(1)}" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+          <line x1="${(szLeft + w3).toFixed(1)}" y1="${szTop.toFixed(1)}" x2="${(szLeft + w3).toFixed(1)}" y2="${szBot.toFixed(1)}" stroke="rgba(255,255,255,0.1)"/>
+          <line x1="${(szLeft + 2*w3).toFixed(1)}" y1="${szTop.toFixed(1)}" x2="${(szLeft + 2*w3).toFixed(1)}" y2="${szBot.toFixed(1)}" stroke="rgba(255,255,255,0.1)"/>
+          <line x1="${szLeft.toFixed(1)}" y1="${(szTop + h3).toFixed(1)}" x2="${szRight.toFixed(1)}" y2="${(szTop + h3).toFixed(1)}" stroke="rgba(255,255,255,0.1)"/>
+          <line x1="${szLeft.toFixed(1)}" y1="${(szTop + 2*h3).toFixed(1)}" x2="${szRight.toFixed(1)}" y2="${(szTop + 2*h3).toFixed(1)}" stroke="rgba(255,255,255,0.1)"/>
+          ${dots}
+        </svg>
+        <div class="zone-legend">
+          <span><span class="dot ball"></span>Ball</span>
+          <span><span class="dot strike"></span>Strike</span>
+          <span><span class="dot inplay"></span>In play</span>
+        </div>
+      </div>`;
+  }
+
+  // NL Central live radar — every other game in the division today, sorted
+  // live → scheduled → final. Same card shape regardless of state.
+  function dedupeNLCGames(scheduleJson) {
+    const seen = new Set();
+    const games = [];
+    (scheduleJson.dates || []).forEach(day => {
+      (day.games || []).forEach(g => {
+        if (seen.has(g.gamePk)) return;
+        seen.add(g.gamePk);
+        games.push(g);
+      });
+    });
+    return games;
+  }
+  function isCodeLive(code) { return ['I', 'M', 'P'].includes(code); }
+  function isCodeFinal(code) { return ['F', 'O'].includes(code); }
+  function sortNLCGames(games) {
+    const order = (g) => {
+      const c = g.status?.codedGameState || '';
+      if (isCodeLive(c)) return 0;
+      if (isCodeFinal(c)) return 2;
+      return 1;
+    };
+    return games.slice().sort((a, b) => {
+      const oa = order(a), ob = order(b);
+      if (oa !== ob) return oa - ob;
+      return new Date(a.gameDate) - new Date(b.gameDate);
+    });
+  }
+  function renderNLCGame(g) {
+    const home = g.teams.home, away = g.teams.away;
+    // Prefer the API's standard 3-letter abbreviation (CHC, STL, MIL…) so the
+    // radar reads like a scoreboard. Fall back to the project's longer labels
+    // only if the abbreviation isn't hydrated.
+    const homeAbbr = (home.team.abbreviation || TEAM_ABBR[home.team.id] || home.team.teamName || '').toUpperCase();
+    const awayAbbr = (away.team.abbreviation || TEAM_ABBR[away.team.id] || away.team.teamName || '').toUpperCase();
+    const ls = g.linescore || {};
+    const code = g.status?.codedGameState || '';
+    const isFinal = isCodeFinal(code) || /Final|Game Over|Completed/.test(g.status?.detailedState || '');
+    const isLive = isCodeLive(code) && !isFinal;
+    const inning = ls.currentInning;
+    const half = (ls.inningState || '').toLowerCase();
+    let stateStr;
+    if (isFinal) stateStr = 'Final';
+    else if (isLive) {
+      const arr = half.startsWith('top') ? '▲'
+        : half.startsWith('bot') ? '▼'
+        : half.startsWith('mid') ? 'Mid'
+        : half.startsWith('end') ? 'End' : '·';
+      stateStr = inning ? `${arr} ${ordinal(inning)}` : (g.status?.detailedState || 'Live');
+    } else {
+      stateStr = fmtTime(g.gameDate);
+    }
+    const homeScore = home.score, awayScore = away.score;
+    const homeLead = homeScore != null && awayScore != null && homeScore > awayScore;
+    const awayLead = homeScore != null && awayScore != null && awayScore > homeScore;
+    const cls = isLive ? 'live' : isFinal ? 'final' : 'sched';
+    const dispScore = (s) => (s == null ? '–' : s);
+    return `
+      <div class="nlc-game ${cls}">
+        <div class="nlc-state">${stateStr}</div>
+        <div class="nlc-row ${awayLead ? 'lead' : ''}"><span class="abbr">${awayAbbr}</span><span class="num">${dispScore(awayScore)}</span></div>
+        <div class="nlc-row ${homeLead ? 'lead' : ''}"><span class="abbr">${homeAbbr}</span><span class="num">${dispScore(homeScore)}</span></div>
+      </div>`;
+  }
+  function renderNLCRadar(games) {
+    const sec = $('nlc-radar-section');
+    const others = (games || []).filter(g =>
+      g.teams.home.team.id !== TEAM_ID && g.teams.away.team.id !== TEAM_ID
+    );
+    if (!others.length) { sec.style.display = 'none'; return; }
+    sec.style.display = 'block';
+    const sorted = sortNLCGames(others);
+    $('nlc-radar').innerHTML = sorted.map(renderNLCGame).join('');
+    $('nlc-count').textContent = `${sorted.length} GAME${sorted.length === 1 ? '' : 'S'}`;
+  }
+
   function renderLineScoreStrip(linescore, awayLabel, homeLabel) {
     const innings = linescore.innings || [];
     const totals = linescore.teams || {};
@@ -1648,6 +2034,16 @@
         ${pitch.call ? `<span class="pres">${pitch.call}</span>` : ''}
       </div>` : '';
 
+    // WP sparkline, strike-zone plot, Statcast on the latest batted ball.
+    const wpSparkHTML = wpSparklineHTML(wp, c.isHome);
+    const zoneHTML = pitchZoneHTML(currentPlay);
+    const sc_HTML = statcastHTML(allPlays);
+    // When we have a strike-zone plot, lay zone | (pitch + statcast) side-by-side.
+    // Otherwise stack the pitch + statcast pills full-width.
+    const zoneRowHTML = zoneHTML
+      ? `<div class="live-zone-row">${zoneHTML}<div class="zone-meta">${lastPitchHTML}${sc_HTML}</div></div>`
+      : `${lastPitchHTML}${sc_HTML}`;
+
     // On-deck → in-the-hole.
     const onDeckName = offense.onDeck?.fullName;
     const inHoleName = offense.inHole?.fullName;
@@ -1711,6 +2107,7 @@
           </div>
         </div>
         ${renderLineScoreStrip(linescore, awayLabel, homeLabel)}
+        ${wpSparkHTML}
         <div class="live-stats-row">
           ${batter ? `
             <div class="stat-cell">
@@ -1725,7 +2122,7 @@
               ${pitcherLineHTML ? `<div class="line">${pitcherLineHTML}</div>` : ''}
             </div>` : '<div></div>'}
         </div>
-        ${lastPitchHTML}
+        ${zoneRowHTML}
         ${lastPlay ? `<div class="live-last">${lastPlay}</div>` : ''}
         ${upcomingHTML}
         ${metaHTML}
@@ -1892,9 +2289,10 @@
       const start = new Date(); start.setDate(start.getDate() - 21);
       const end = new Date(); end.setDate(end.getDate() + 14);
 
-      const [standings, schedule] = await Promise.all([
+      const [standings, schedule, nlcToday] = await Promise.all([
         fetchStandings(),
-        fetchSchedule(isoDate(start), isoDate(end))
+        fetchSchedule(isoDate(start), isoDate(end)),
+        fetchNLCentralToday().catch(() => null)
       ]);
 
       // Standings: NL Central (for magic-number math) + flat record map (for opponent badges)
@@ -1925,12 +2323,23 @@
           fetchWinProbability(gpk).catch(() => null)
         ]);
       }
-      liveMode = live.length > 0;
+
+      // Today's NL Central slate (other four teams). Polling speeds up if
+      // anyone in the division is playing, since chaser scores swing the
+      // magic number.
+      const nlcGames = nlcToday ? dedupeNLCGames(nlcToday) : [];
+      const anyChaserLive = nlcGames.some(g =>
+        g.teams.home.team.id !== TEAM_ID
+        && g.teams.away.team.id !== TEAM_ID
+        && isCodeLive(g.status?.codedGameState || '')
+      );
+      liveMode = live.length > 0 || anyChaserLive;
 
       // Pump it all out
       renderHero(state);
       renderMeta(state.cubs, recent);
       renderStandings(state.sorted);
+      renderNLCRadar(nlcGames);
       renderGames(recent, upcoming, recordMap);
       const next = live[0] || upcoming[0] || null;
       renderNextGame(next, recordMap, liveFeed, liveWP);
