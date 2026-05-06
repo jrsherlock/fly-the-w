@@ -942,6 +942,51 @@
     font-weight: 600;
   }
   .probables .vs-mini { color: var(--ink-faint); margin: 0 4px; }
+  .probables .pp { display: inline-flex; align-items: center; gap: 5px; }
+
+  /* Player headshots */
+  .headshot {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+    border: 2px solid rgba(58,111,255,0.45);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    object-fit: cover;
+    object-position: top center;
+  }
+  .headshot.cubs { border-color: rgba(58,111,255,0.55); }
+  .headshot.opp { border-color: rgba(204,52,51,0.55); }
+  .headshot-mini {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.04);
+    vertical-align: middle;
+    flex-shrink: 0;
+    object-fit: cover; object-position: top center;
+  }
+  .stat-cell.with-headshot {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .stat-cell.with-headshot .stat-cell-body { flex: 1; min-width: 0; }
+  .game-decisions .dec-w,
+  .game-decisions .dec-l,
+  .game-decisions .dec-s {
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+
+  /* Broadcasts (TV networks) */
+  .broadcasts {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--ink-dim);
+    font-weight: 600;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .broadcasts .icon { opacity: 0.7; }
+  .broadcasts .name { color: var(--ink); }
   .highlights-btn {
     margin-top: 12px;
     width: 100%;
@@ -1335,7 +1380,7 @@
     return map;
   }
   async function fetchSchedule(startDate, endDate) {
-    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${startDate}&endDate=${endDate}&gameType=R&hydrate=team,linescore,decisions,probablePitcher`;
+    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${startDate}&endDate=${endDate}&gameType=R&hydrate=team,linescore,decisions,probablePitcher,broadcasts`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('schedule ' + r.status);
     return r.json();
@@ -1609,6 +1654,25 @@
     return parts.length === 1 ? parts[0] : `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
   }
 
+  // MLB hosts player headshots at midfield.mlbstatic.com keyed by player ID.
+  // Sizes: 60, 90, 120, 180. Fallback hides the broken image gracefully.
+  function headshotImg(playerId, { size = 60, cls = '' } = {}) {
+    if (!playerId) return '';
+    const url = `https://midfield.mlbstatic.com/v1/people/${playerId}/spots/${size}`;
+    return `<img class="${cls}" src="${url}" alt="" loading="lazy" onerror="this.style.display='none'">`;
+  }
+
+  // Pick a single TV network for a Cubs game. Prefer national broadcasts
+  // (ESPN, FOX, MLBN, AppleTV) — that's the "where can I watch this?" answer
+  // for fans outside Chicago. Fall back to whichever side the Cubs are on.
+  function pickTvBroadcasts(game, isHome) {
+    const all = (game.broadcasts || []).filter(b => b.type === 'TV');
+    const cubsSide = isHome ? 'home' : 'away';
+    const filtered = all.filter(b => b.isNational || b.homeAway === cubsSide);
+    const names = [...new Set(filtered.map(b => b.name))];
+    return names.slice(0, 2);
+  }
+
   function renderGameCard(c, recordMap) {
     const oppName = c.oppSide.team.teamName || c.oppSide.team.name;
     const oppRec = recordMap && recordMap[c.oppSide.team.id];
@@ -1621,9 +1685,9 @@
     if (c.isFinal) {
       const dec = c.raw.decisions || {};
       const decBits = [];
-      if (dec.winner) decBits.push(`<span class="dec-w">W: ${lastName(dec.winner.fullName)}</span>`);
-      if (dec.loser) decBits.push(`<span class="dec-l">L: ${lastName(dec.loser.fullName)}</span>`);
-      if (dec.save) decBits.push(`<span class="dec-s">SV: ${lastName(dec.save.fullName)}</span>`);
+      if (dec.winner) decBits.push(`<span class="dec-w">${headshotImg(dec.winner.id, { cls: 'headshot-mini' })}W: ${lastName(dec.winner.fullName)}</span>`);
+      if (dec.loser) decBits.push(`<span class="dec-l">${headshotImg(dec.loser.id, { cls: 'headshot-mini' })}L: ${lastName(dec.loser.fullName)}</span>`);
+      if (dec.save) decBits.push(`<span class="dec-s">${headshotImg(dec.save.id, { cls: 'headshot-mini' })}SV: ${lastName(dec.save.fullName)}</span>`);
       const decRow = decBits.length ? `<div class="game-decisions">${decBits.join(' · ')}</div>` : '';
       scoreOrTime = `
         <div class="game-score">${c.cubsSide.score}–<span class="opp-score">${c.oppSide.score}</span></div>
@@ -1638,10 +1702,17 @@
       const awayP = c.raw.teams.away.probablePitcher;
       const cubsP = c.isHome ? homeP : awayP;
       const oppP = c.isHome ? awayP : homeP;
-      const probable = (cubsP || oppP)
-        ? `<div class="probables">${lastName(cubsP?.fullName) || 'TBD'} <span class="vs-mini">vs</span> ${lastName(oppP?.fullName) || 'TBD'}</div>`
+      const probable = (cubsP || oppP) ? `
+        <div class="probables">
+          <span class="pp">${headshotImg(cubsP?.id, { cls: 'headshot-mini' })}${lastName(cubsP?.fullName) || 'TBD'}</span>
+          <span class="vs-mini">vs</span>
+          <span class="pp">${headshotImg(oppP?.id, { cls: 'headshot-mini' })}${lastName(oppP?.fullName) || 'TBD'}</span>
+        </div>` : '';
+      const tvNames = pickTvBroadcasts(c.raw, c.isHome);
+      const broadcastHTML = tvNames.length
+        ? `<div class="broadcasts"><span class="icon">📺</span><span class="name">${tvNames.join(' · ')}</span></div>`
         : '';
-      scoreOrTime = `<div class="game-time">${fmtTime(c.date)}</div>${probable}`;
+      scoreOrTime = `<div class="game-time">${fmtTime(c.date)}</div>${probable}${broadcastHTML}`;
     }
     const cls = c.isLive ? 'live' : (c.result === 'W' ? 'win' : (c.result === 'L' ? 'loss' : ''));
     const resultBadge = c.result ? `<div class="game-result ${c.result}">${c.result}</div>` : '';
@@ -2171,16 +2242,22 @@
         ${wpSparkHTML}
         <div class="live-stats-row">
           ${batter ? `
-            <div class="stat-cell">
-              <small>At bat</small>
-              <div class="name">${batter}</div>
-              ${batterLineHTML ? `<div class="line">${batterLineHTML}</div>` : ''}
+            <div class="stat-cell with-headshot">
+              ${headshotImg(offense.batter?.id, { size: 90, cls: `headshot ${c.isHome ? 'cubs' : 'opp'}` })}
+              <div class="stat-cell-body">
+                <small>At bat</small>
+                <div class="name">${batter}</div>
+                ${batterLineHTML ? `<div class="line">${batterLineHTML}</div>` : ''}
+              </div>
             </div>` : '<div></div>'}
           ${pitcher ? `
-            <div class="stat-cell">
-              <small>Pitching</small>
-              <div class="name">${pitcher}</div>
-              ${pitcherLineHTML ? `<div class="line">${pitcherLineHTML}</div>` : ''}
+            <div class="stat-cell with-headshot">
+              ${headshotImg(defense.pitcher?.id, { size: 90, cls: `headshot ${c.isHome ? 'opp' : 'cubs'}` })}
+              <div class="stat-cell-body">
+                <small>Pitching</small>
+                <div class="name">${pitcher}</div>
+                ${pitcherLineHTML ? `<div class="line">${pitcherLineHTML}</div>` : ''}
+              </div>
             </div>` : '<div></div>'}
         </div>
         ${zoneRowHTML}
