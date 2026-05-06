@@ -305,6 +305,99 @@
     font-weight: 700;
   }
 
+  /* Insights panel */
+  .insights {
+    margin-top: 22px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 20px 22px 18px;
+    backdrop-filter: blur(8px);
+  }
+  .insights-title {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    margin-bottom: 6px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 0.14em;
+    color: var(--ink);
+  }
+  .insights-title .lede { color: var(--cubs-blue-glow); }
+  .insights-title .scope {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+    font-weight: 500;
+    text-transform: none;
+  }
+  .insights-sub {
+    color: var(--ink-faint);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+  }
+  .insight-row {
+    display: grid;
+    grid-template-columns: 56px 1fr 140px 50px;
+    gap: 14px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .insight-row:last-child { border-bottom: none; }
+  .insight-row .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px; font-weight: 700;
+    color: var(--ink);
+    text-align: right;
+    line-height: 1;
+  }
+  .insight-row .label {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .insight-row .label small {
+    display: block;
+    font-size: 11px; font-weight: 400;
+    color: var(--ink-faint);
+    margin-top: 2px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .insight-row .bar {
+    height: 6px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .insight-row .bar-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--cubs-blue-glow), var(--win));
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .insight-row.cb .bar-fill { background: linear-gradient(90deg, var(--gold), var(--win)); }
+  .insight-row.cb .num { color: var(--gold); }
+  .insight-row.hdr .num { color: var(--win); font-size: 28px; }
+  .insight-row.hdr .label { font-size: 16px; font-weight: 700; }
+  .insight-row.hdr .bar-fill { background: linear-gradient(90deg, var(--cubs-blue), var(--win)); }
+  .insight-row .pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-align: right;
+  }
+
+  @media (max-width: 720px) {
+    .insight-row {
+      grid-template-columns: 48px 1fr 50px;
+      gap: 10px;
+    }
+    .insight-row .bar { display: none; }
+    .insight-row .num { font-size: 20px; }
+  }
+
   footer {
     text-align: center;
     padding: 24px 16px 40px;
@@ -340,6 +433,7 @@
       <span class="ctrl-label">Range</span>
       <button class="chip" data-range="7">Last 7</button>
       <button class="chip" data-range="14">Last 14</button>
+      <button class="chip" data-range="20">Last 20</button>
       <button class="chip" data-range="30">Last 30</button>
       <button class="chip active" data-range="all">All</button>
     </div>
@@ -361,6 +455,8 @@
       <span style="margin-left:auto; color: var(--ink-faint);">Hover any line to identify it · X-axis = game progress · Y-axis = Cubs win probability</span>
     </div>
   </div>
+
+  <div class="insights" id="insights"></div>
 </main>
 
 <div class="tip" id="tip">
@@ -514,12 +610,13 @@
       if (homeWP == null) return null;
       return {
         wp: isHome ? homeWP : (100 - homeWP),
-        inning: p.about?.inning ?? null
+        inning: p.about?.inning ?? null,
+        half: p.about?.halfInning ?? null
       };
     }).filter(v => v != null);
     if (raw.length < 2) return null;
     const n = raw.length;
-    return raw.map((v, i) => ({ x: i / (n - 1), y: v.wp, inning: v.inning }));
+    return raw.map((v, i) => ({ x: i / (n - 1), y: v.wp, inning: v.inning, half: v.half }));
   }
 
   // Comeback win: Cubs WP dropped under 50% at some point in the 7th inning or
@@ -530,6 +627,56 @@
     if (!late.length) return false;
     const lateLow = Math.min(...late.map(p => p.y));
     return lateLow < 50;
+  }
+
+  // Cubs allowed the first run of the game. Walks the per-inning linescore in
+  // chronological order — top half always bats first — and attributes the
+  // first run to whichever side had non-zero runs in the earliest scoring
+  // half-inning.
+  function allowedFirstRun(game) {
+    const innings = game.raw?.linescore?.innings || [];
+    for (const inn of innings) {
+      const a = inn.away?.runs ?? 0;
+      const h = inn.home?.runs ?? 0;
+      if (a > 0) return game.isHome;     // away (top) scored first; if Cubs are home, opp scored first
+      if (h > 0) return !game.isHome;    // home (bottom) scored first; if Cubs are away, opp scored first
+    }
+    return false;
+  }
+
+  function oneRunWin(game) {
+    return game.result === 'W'
+      && game.cubsSide?.score != null && game.oppSide?.score != null
+      && (game.cubsSide.score - game.oppSide.score) === 1;
+  }
+
+  // Trailed in WP terms during the 8th or later, then won.
+  function trailedLate(game) {
+    if (game.result !== 'W' || !game.points) return false;
+    return game.points.some(p => (p.inning ?? 0) >= 8 && p.y < 50);
+  }
+
+  function isExtraInningGame(game) {
+    const innings = game.raw?.linescore?.innings || [];
+    if (innings.length > 9) return true;
+    return (game.raw?.linescore?.currentInning ?? 9) > 9;
+  }
+
+  // Walkoff win: Cubs are home, scored in their final at-bat to take the lead
+  // and end the game. Computed from per-inning runs in the linescore — if the
+  // Cubs (home) entered the bottom of the final inning tied or behind and
+  // ended ahead, that's a walkoff.
+  function isWalkoff(game) {
+    if (game.result !== 'W' || !game.isHome) return false;
+    const innings = game.raw?.linescore?.innings || [];
+    if (!innings.length) return false;
+    const last = innings[innings.length - 1];
+    const homeRunsLast = last.home?.runs ?? 0;
+    if (homeRunsLast === 0) return false;
+    const awayRunsLast = last.away?.runs ?? 0;
+    const cubsBefore = (game.cubsSide?.score ?? 0) - homeRunsLast;
+    const oppBefore = (game.oppSide?.score ?? 0) - awayRunsLast;
+    return cubsBefore <= oppBefore && (game.cubsSide?.score > game.oppSide?.score);
   }
 
   function gameClass(game) {
@@ -576,32 +723,46 @@
   // ---------- Filter state + UI wiring ----------
   const state = { range: 'all', wins: true, losses: true, comebacksOnly: false };
 
-  function isVisible(game) {
-    if (state.range !== 'all') {
-      const days = parseInt(state.range, 10);
-      const cutoff = Date.now() - days * 86400000;
-      if (new Date(game.date).getTime() < cutoff) return false;
-    }
-    if (game.isLive) return true; // live games always show
-    if (state.comebacksOnly) return !!game.isComeback;
-    if (game.result === 'W' && !state.wins) return false;
-    if (game.result === 'L' && !state.losses) return false;
-    return true;
+  // Resolve the "Last N games" set: sort by date descending and take the top N.
+  // Live games count as the most recent games (they're being played right now).
+  function lastNSet(games, n) {
+    const sortedDesc = games.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+    return new Set(sortedDesc.slice(0, n).map(g => g.gamePk));
   }
 
   function applyFilters(games) {
     const layer = $('games-layer');
     if (!layer) return;
+
+    const inRange = state.range === 'all' ? null : lastNSet(games, parseInt(state.range, 10));
+
+    function isVisible(g) {
+      if (inRange && !inRange.has(g.gamePk) && !g.isLive) return false;
+      if (g.isLive) return true;
+      if (state.comebacksOnly) return !!g.isComeback;
+      if (g.result === 'W' && !state.wins) return false;
+      if (g.result === 'L' && !state.losses) return false;
+      return true;
+    }
+
     games.forEach(g => {
       const show = isVisible(g);
       const els = layer.querySelectorAll(`[data-game-pk="${g.gamePk}"]`);
       els.forEach(el => el.classList.toggle('hidden', !show));
     });
+
+    // Insights are scoped to the active range only — the W/L toggles dim the
+    // chart but shouldn't change the "last N games" denominators.
+    const insightScope = inRange
+      ? games.filter(g => inRange.has(g.gamePk))
+      : games;
+    renderInsights(insightScope);
+
     // Status line reflects the current filter
     const visibleCount = games.filter(g => isVisible(g)).length;
     const total = games.length;
     const filterParts = [];
-    if (state.range !== 'all') filterParts.push(`last ${state.range} days`);
+    if (state.range !== 'all') filterParts.push(`last ${state.range} games`);
     if (state.comebacksOnly) filterParts.push('comeback wins only');
     else {
       if (!state.wins) filterParts.push('losses only');
@@ -609,6 +770,51 @@
     }
     const suffix = filterParts.length ? ` · ${filterParts.join(' · ')}` : '';
     status.textContent = `Showing ${visibleCount} of ${total} games${suffix} · hover any line to identify it`;
+  }
+
+  // ---------- Insights panel ----------
+  function renderInsights(games) {
+    const finals = games.filter(g => g.isFinal || g.isLive);
+    const wins = finals.filter(g => g.result === 'W');
+    const winCount = wins.length;
+    const denom = winCount || 1;
+    const pct = n => Math.round((n / denom) * 100);
+
+    // Each metric counts wins fitting the criterion. Order matters for visual
+    // narrative — start with the broad headline, drill into the dramatic.
+    const rows = [
+      { num: winCount, label: 'Wins', sub: `${finals.length} games played`, hdr: true },
+      { num: wins.filter(g => g.isComeback).length, label: 'Comeback wins', sub: 'Cubs WP dropped below 50% in the 7th inning or later', cb: true },
+      { num: wins.filter(allowedFirstRun).length, label: 'Wins after allowing the first run', sub: 'Opponent scored before the Cubs did, Cubs still won' },
+      { num: wins.filter(oneRunWin).length, label: 'One-run wins', sub: 'Final margin of one run' },
+      { num: wins.filter(isWalkoff).length, label: 'Walkoff wins', sub: 'Took the lead in the bottom of the final inning to end the game' },
+      { num: wins.filter(trailedLate).length, label: 'Wins after trailing the 8th inning or later', sub: 'Cubs WP below 50% in the 8th or 9th, won anyway', cb: true },
+      { num: wins.filter(isExtraInningGame).length, label: 'Extra-inning wins', sub: 'Game went past 9 innings' }
+    ];
+
+    const scopeLabel = state.range === 'all'
+      ? `season to date · ${finals.length} games`
+      : `last ${state.range} games · ${finals.length} played`;
+
+    const html = `
+      <div class="insights-title">
+        <span><span class="lede">Comeback DNA</span></span>
+        <span class="scope">${scopeLabel}</span>
+      </div>
+      <div class="insights-sub">% bars are share of total wins in this range. Change the range above to slice differently.</div>
+      ${rows.map(r => {
+        const fillPct = r.hdr ? Math.min(100, Math.round((r.num / Math.max(1, finals.length)) * 100)) : pct(r.num);
+        const pctLabel = r.hdr ? `${Math.round((r.num / Math.max(1, finals.length)) * 100)}%` : `${pct(r.num)}%`;
+        return `
+          <div class="insight-row ${r.cb ? 'cb' : ''} ${r.hdr ? 'hdr' : ''}">
+            <div class="num">${r.num}</div>
+            <div class="label">${r.label}<small>${r.sub}</small></div>
+            <div class="bar"><div class="bar-fill" style="width:${fillPct}%"></div></div>
+            <div class="pct">${pctLabel}</div>
+          </div>`;
+      }).join('')}
+    `;
+    $('insights').innerHTML = html;
   }
 
   function wireControls(games) {
