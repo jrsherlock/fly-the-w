@@ -141,6 +141,71 @@
   }
   .legend .swatch.win { background: var(--win); box-shadow: 0 0 8px rgba(74,222,128,0.5); }
   .legend .swatch.loss { background: var(--loss); box-shadow: 0 0 8px rgba(239,68,68,0.5); }
+  .legend .swatch.cb { background: var(--gold); box-shadow: 0 0 10px rgba(201,169,97,0.7); }
+
+  /* Filter controls */
+  .controls {
+    display: flex; flex-wrap: wrap;
+    gap: 16px 22px;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+  }
+  .control-group {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+  }
+  .ctrl-label {
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+    margin-right: 4px;
+  }
+  .chip {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--ink-dim);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-weight: 600;
+    user-select: none;
+  }
+  .chip:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
+  .chip.active {
+    background: rgba(58,111,255,0.16);
+    border-color: rgba(58,111,255,0.5);
+    color: var(--ink);
+    box-shadow: 0 0 14px rgba(58,111,255,0.18);
+  }
+  .chip.toggle .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    transition: all 0.15s;
+  }
+  .chip.toggle .dot.win { background: var(--win); box-shadow: 0 0 6px rgba(74,222,128,0.6); }
+  .chip.toggle .dot.loss { background: var(--loss); box-shadow: 0 0 6px rgba(239,68,68,0.6); }
+  .chip.toggle .dot.cb { background: var(--gold); box-shadow: 0 0 8px rgba(201,169,97,0.8); }
+  .chip.toggle.off { opacity: 0.42; }
+  .chip.toggle.off .dot { opacity: 0.3; }
+  .chip.toggle.on {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.18);
+    color: var(--ink);
+  }
+  .chip.toggle.cb-active {
+    background: rgba(201,169,97,0.14);
+    border-color: rgba(201,169,97,0.55);
+    color: var(--gold);
+    box-shadow: 0 0 14px rgba(201,169,97,0.22);
+  }
 
   /* Tooltip */
   .tip {
@@ -175,6 +240,13 @@
   }
   .tip.win .t-score { color: var(--win); }
   .tip.loss .t-score { color: var(--loss); }
+  .tip.comeback .t-score { color: var(--gold); }
+  .tip.live .t-score { color: var(--cubs-blue-glow); }
+  .tip .t-cb {
+    margin-top: 6px;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700;
+  }
   .tip .t-meta {
     margin-top: 4px;
     font-size: 11px;
@@ -193,17 +265,26 @@
   }
   .game-path.win { stroke: var(--win); opacity: 0.22; }
   .game-path.loss { stroke: var(--loss); opacity: 0.18; }
-  .game-path.live { stroke: var(--gold); opacity: 0.85; stroke-width: 2; }
+  .game-path.comeback {
+    stroke: var(--gold);
+    opacity: 0.7;
+    stroke-width: 1.8;
+    filter: drop-shadow(0 0 4px rgba(201,169,97,0.4));
+  }
+  .game-path.live { stroke: var(--cubs-blue-glow); opacity: 0.95; stroke-width: 2.4; }
+  .game-path.hidden { display: none; }
   .game-path.dim { opacity: 0.05; }
   .game-path.hot {
     stroke-width: 3;
     opacity: 1;
-    filter: drop-shadow(0 0 8px currentColor);
+    filter: drop-shadow(0 0 10px currentColor);
   }
   .end-dot { transition: r 0.15s, opacity 0.15s; }
   .end-dot.win { fill: var(--win); }
   .end-dot.loss { fill: var(--loss); }
-  .end-dot.live { fill: var(--gold); }
+  .end-dot.comeback { fill: var(--gold); filter: drop-shadow(0 0 6px rgba(201,169,97,0.7)); }
+  .end-dot.live { fill: var(--cubs-blue-glow); }
+  .end-dot.hidden { display: none; }
   .end-dot.dim { opacity: 0.1; }
   .end-dot.hot { r: 5; }
 
@@ -254,14 +335,30 @@
 </header>
 
 <main>
+  <div class="controls" id="controls">
+    <div class="control-group">
+      <span class="ctrl-label">Range</span>
+      <button class="chip" data-range="7">Last 7</button>
+      <button class="chip" data-range="14">Last 14</button>
+      <button class="chip" data-range="30">Last 30</button>
+      <button class="chip active" data-range="all">All</button>
+    </div>
+    <div class="control-group">
+      <span class="ctrl-label">Show</span>
+      <button class="chip toggle on" data-toggle="wins"><span class="dot win"></span>Wins</button>
+      <button class="chip toggle on" data-toggle="losses"><span class="dot loss"></span>Losses</button>
+      <button class="chip toggle off" data-toggle="comebacks"><span class="dot cb"></span>Comebacks only</button>
+    </div>
+  </div>
+
   <div class="chart-wrap" id="chart-wrap">
     <div class="chart-status" id="chart-status">Loading schedule…</div>
     <svg class="chart-svg" id="chart" viewBox="0 0 1000 420" preserveAspectRatio="none"></svg>
     <div class="legend">
       <span><span class="swatch win"></span>Wins</span>
       <span><span class="swatch loss"></span>Losses</span>
-      <span style="color: var(--gold);"><span class="swatch" style="background: var(--gold); box-shadow: 0 0 8px rgba(201,169,97,0.6);"></span>In progress</span>
-      <span style="margin-left:auto; color: var(--ink-faint);">Hover any line to identify the game · X-axis = game progress · Y-axis = Cubs win probability</span>
+      <span style="color: var(--gold);"><span class="swatch cb"></span>Comeback wins · trailed in WP after the 7th</span>
+      <span style="margin-left:auto; color: var(--ink-faint);">Hover any line to identify it · X-axis = game progress · Y-axis = Cubs win probability</span>
     </div>
   </div>
 </main>
@@ -412,14 +509,33 @@
 
   function pointsFromWP(wp, isHome) {
     if (!Array.isArray(wp) || wp.length < 2) return null;
-    const series = wp.map(p => {
+    const raw = wp.map(p => {
       const homeWP = p.homeTeamWinProbability;
       if (homeWP == null) return null;
-      return isHome ? homeWP : (100 - homeWP);
+      return {
+        wp: isHome ? homeWP : (100 - homeWP),
+        inning: p.about?.inning ?? null
+      };
     }).filter(v => v != null);
-    if (series.length < 2) return null;
-    const n = series.length;
-    return series.map((v, i) => ({ x: i / (n - 1), y: v }));
+    if (raw.length < 2) return null;
+    const n = raw.length;
+    return raw.map((v, i) => ({ x: i / (n - 1), y: v.wp, inning: v.inning }));
+  }
+
+  // Comeback win: Cubs WP dropped under 50% at some point in the 7th inning or
+  // later, and they still ended up winning. Surfaces the late-innings grit.
+  function isComebackWin(game) {
+    if (game.result !== 'W' || !game.points) return false;
+    const late = game.points.filter(p => (p.inning ?? 0) >= 7);
+    if (!late.length) return false;
+    const lateLow = Math.min(...late.map(p => p.y));
+    return lateLow < 50;
+  }
+
+  function gameClass(game) {
+    if (game.isLive) return 'live';
+    if (game.result === 'W') return game.isComeback ? 'comeback' : 'win';
+    return 'loss';
   }
 
   function renderGames(games) {
@@ -427,16 +543,15 @@
     layer.setAttribute('id', 'games-layer');
     svg.appendChild(layer);
 
-    // Render losses first, wins on top, in-progress on very top
-    const order = [...games].sort((a, b) => {
-      const rank = g => g.isLive ? 2 : (g.result === 'W' ? 1 : 0);
-      return rank(a) - rank(b);
-    });
+    // Stack order: losses (bottom) → wins → comebacks → live (top), so the
+    // dramatic ones win the visual fight.
+    const rank = g => g.isLive ? 3 : g.isComeback ? 2 : g.result === 'W' ? 1 : 0;
+    const order = [...games].sort((a, b) => rank(a) - rank(b));
 
     order.forEach(game => {
       if (!game.points) return;
+      const cls = gameClass(game);
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      const cls = game.isLive ? 'live' : (game.result === 'W' ? 'win' : 'loss');
       path.setAttribute('class', `game-path ${cls}`);
       path.setAttribute('d', pathFor(game.points));
       path.dataset.gamePk = game.gamePk;
@@ -455,6 +570,76 @@
     });
 
     wireHover(games);
+    applyFilters(games);
+  }
+
+  // ---------- Filter state + UI wiring ----------
+  const state = { range: 'all', wins: true, losses: true, comebacksOnly: false };
+
+  function isVisible(game) {
+    if (state.range !== 'all') {
+      const days = parseInt(state.range, 10);
+      const cutoff = Date.now() - days * 86400000;
+      if (new Date(game.date).getTime() < cutoff) return false;
+    }
+    if (game.isLive) return true; // live games always show
+    if (state.comebacksOnly) return !!game.isComeback;
+    if (game.result === 'W' && !state.wins) return false;
+    if (game.result === 'L' && !state.losses) return false;
+    return true;
+  }
+
+  function applyFilters(games) {
+    const layer = $('games-layer');
+    if (!layer) return;
+    games.forEach(g => {
+      const show = isVisible(g);
+      const els = layer.querySelectorAll(`[data-game-pk="${g.gamePk}"]`);
+      els.forEach(el => el.classList.toggle('hidden', !show));
+    });
+    // Status line reflects the current filter
+    const visibleCount = games.filter(g => isVisible(g)).length;
+    const total = games.length;
+    const filterParts = [];
+    if (state.range !== 'all') filterParts.push(`last ${state.range} days`);
+    if (state.comebacksOnly) filterParts.push('comeback wins only');
+    else {
+      if (!state.wins) filterParts.push('losses only');
+      if (!state.losses && state.wins) filterParts.push('wins only');
+    }
+    const suffix = filterParts.length ? ` · ${filterParts.join(' · ')}` : '';
+    status.textContent = `Showing ${visibleCount} of ${total} games${suffix} · hover any line to identify it`;
+  }
+
+  function wireControls(games) {
+    document.querySelectorAll('.chip[data-range]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.chip[data-range]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.range = btn.dataset.range;
+        applyFilters(games);
+      });
+    });
+    document.querySelectorAll('.chip.toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.toggle;
+        if (key === 'comebacks') {
+          state.comebacksOnly = !state.comebacksOnly;
+          btn.classList.toggle('on', state.comebacksOnly);
+          btn.classList.toggle('off', !state.comebacksOnly);
+          btn.classList.toggle('cb-active', state.comebacksOnly);
+        } else if (key === 'wins') {
+          state.wins = !state.wins;
+          btn.classList.toggle('on', state.wins);
+          btn.classList.toggle('off', !state.wins);
+        } else if (key === 'losses') {
+          state.losses = !state.losses;
+          btn.classList.toggle('on', state.losses);
+          btn.classList.toggle('off', !state.losses);
+        }
+        applyFilters(games);
+      });
+    });
   }
 
   function wireHover(games) {
@@ -495,10 +680,17 @@
       const finalWP = g.points?.[g.points.length - 1]?.y;
       const peak = g.points ? Math.max(...g.points.map(p => p.y)) : null;
       const valley = g.points ? Math.min(...g.points.map(p => p.y)) : null;
-      $('t-meta').textContent = peak != null
+      let meta = peak != null
         ? `peak ${Math.round(peak)}% · low ${Math.round(valley)}%${finalWP != null ? ' · final ' + Math.round(finalWP) + '%' : ''}`
         : '';
-      tip.className = 'tip show ' + (g.isLive ? 'live' : (g.result === 'W' ? 'win' : 'loss'));
+      if (g.isComeback) {
+        const late = g.points.filter(p => (p.inning ?? 0) >= 7);
+        const lateLow = Math.min(...late.map(p => p.y));
+        meta += `\n7th+ inning low: ${Math.round(lateLow)}% — clutch comeback win`;
+      }
+      $('t-meta').innerHTML = meta.replace('\n', '<br>');
+      const cls = g.isLive ? 'live' : g.isComeback ? 'comeback' : g.result === 'W' ? 'win' : 'loss';
+      tip.className = 'tip show ' + cls;
     }
 
     layer.addEventListener('mousemove', e => {
@@ -522,19 +714,20 @@
     const wins = finals.filter(g => g.result === 'W').length;
     const losses = finals.length - wins;
     const live = games.filter(g => g.isLive).length;
+    const comebacks = games.filter(g => g.isComeback).length;
 
-    // Biggest comeback (largest gap between low WP and final win) and toughest loss
+    // Best comeback (lowest late-innings WP that still ended in a win) and
+    // toughest loss (highest WP that still ended in a loss).
     let biggestComeback = null, toughestLoss = null;
     games.forEach(g => {
       if (!g.points || !g.isFinal) return;
-      const low = Math.min(...g.points.map(p => p.y));
       const high = Math.max(...g.points.map(p => p.y));
-      if (g.result === 'W') {
-        const swing = 100 - low;
-        if (!biggestComeback || swing > biggestComeback.swing) biggestComeback = { g, swing, low: Math.round(low) };
-      } else {
-        const swing = high;
-        if (!toughestLoss || swing > toughestLoss.swing) toughestLoss = { g, swing, high: Math.round(high) };
+      if (g.isComeback) {
+        const late = g.points.filter(p => (p.inning ?? 0) >= 7);
+        const lateLow = Math.min(...late.map(p => p.y));
+        if (!biggestComeback || lateLow < biggestComeback.low) biggestComeback = { g, low: Math.round(lateLow) };
+      } else if (g.result === 'L') {
+        if (!toughestLoss || high > toughestLoss.high) toughestLoss = { g, high: Math.round(high) };
       }
     });
 
@@ -542,8 +735,9 @@
       <div class="stat win"><small>Wins</small><strong>${wins}</strong></div>
       <div class="stat loss"><small>Losses</small><strong>${losses}</strong></div>
       <div class="stat"><small>Win %</small><strong>${finals.length ? (wins / finals.length).toFixed(3).replace(/^0/, '') : '—'}</strong></div>
-      ${live ? `<div class="stat" style="color: var(--gold);"><small>Live now</small><strong style="color: var(--gold);">${live}</strong></div>` : ''}
-      ${biggestComeback ? `<div class="stat win" title="vs ${biggestComeback.g.oppSide.team.teamName} on ${fmtDate(biggestComeback.g.date)}"><small>Best comeback</small><strong>${biggestComeback.low}% → W</strong></div>` : ''}
+      ${live ? `<div class="stat" style="color: var(--cubs-blue-glow);"><small>Live now</small><strong style="color: var(--cubs-blue-glow);">${live}</strong></div>` : ''}
+      <div class="stat" style="color: var(--gold);"><small>Comeback wins</small><strong style="color: var(--gold);">${comebacks}</strong></div>
+      ${biggestComeback ? `<div class="stat" style="color: var(--gold);" title="vs ${biggestComeback.g.oppSide.team.teamName} on ${fmtDate(biggestComeback.g.date)}"><small>Best comeback</small><strong style="color: var(--gold);">${biggestComeback.low}% → W</strong></div>` : ''}
       ${toughestLoss ? `<div class="stat loss" title="vs ${toughestLoss.g.oppSide.team.teamName} on ${fmtDate(toughestLoss.g.date)}"><small>Toughest loss</small><strong>${toughestLoss.high}% → L</strong></div>` : ''}
     `;
     $('stats').innerHTML = html;
@@ -570,12 +764,13 @@
       await mapLimit(candidates, 6, async game => {
         const wp = await fetchWP(game.gamePk);
         game.points = pointsFromWP(wp, game.isHome);
+        game.isComeback = isComebackWin(game);
       });
 
       renderGames(candidates);
       renderStats(candidates);
+      wireControls(candidates);
       chartWrap.classList.remove('loading');
-      status.textContent = `${candidates.filter(g => g.points).length} games · hover any line to identify it`;
     } catch (e) {
       console.error(e);
       status.textContent = 'Couldn’t reach the MLB Stats API. Try a refresh.';

@@ -148,6 +148,24 @@
   }
   .refresh-btn:hover { background: rgba(255,255,255,0.12); transform: rotate(180deg); }
   .refresh-btn.spinning { animation: spin 1s linear infinite; }
+  .lab-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(201,169,97,0.08);
+    border: 1px solid rgba(201,169,97,0.32);
+    color: var(--gold);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .lab-link:hover {
+    background: rgba(201,169,97,0.18);
+    border-color: rgba(201,169,97,0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(201,169,97,0.18);
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* Layout */
@@ -1179,6 +1197,7 @@
       </div>
     </div>
     <div class="status">
+      <a class="lab-link" href="wp-overlay.html" title="Season-long win-probability overlay">📈 WP Lab</a>
       <span class="live-pill"><span class="live-dot"></span> LIVE</span>
       <span id="last-updated">Loading…</span>
       <button class="refresh-btn" id="refresh-btn" title="Refresh now">↻</button>
