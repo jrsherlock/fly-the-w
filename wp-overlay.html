@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cubs Win-Probability Overlay — 2026 Season</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
+<meta name="theme-color" content="#0E3386">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cubs-blue: #0E3386;
+    --cubs-blue-glow: #3a6fff;
+    --cubs-red: #CC3433;
+    --cream: #FAF6E9;
+    --gold: #C9A961;
+    --bg-0: #04081a;
+    --bg-1: #0a1230;
+    --ink: #e8ecff;
+    --ink-dim: #9aa3c7;
+    --ink-faint: #5a648c;
+    --win: #4ade80;
+    --loss: #ef4444;
+    --card: rgba(255,255,255,0.04);
+    --card-border: rgba(255,255,255,0.08);
+  }
+  *,*::before,*::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(58,111,255,0.18), transparent 50%),
+      radial-gradient(ellipse at 90% 5%, rgba(204,52,51,0.12), transparent 45%),
+      linear-gradient(180deg, var(--bg-0), var(--bg-1) 60%, var(--bg-0));
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 32px 24px 8px;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .title-block h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 5vw, 60px);
+    letter-spacing: 0.08em;
+    margin: 0;
+    background: linear-gradient(180deg, #ffffff 0%, #b6c8ff 70%, #5a78d4 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .title-block .sub {
+    color: var(--ink-dim);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  .title-block a { color: var(--gold); text-decoration: none; }
+  .title-block a:hover { text-decoration: underline; }
+
+  .stats {
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    backdrop-filter: blur(8px);
+    min-width: 100px;
+  }
+  .stat small {
+    display: block;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .stat strong {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px; font-weight: 700;
+    color: var(--ink);
+  }
+  .stat.win strong { color: var(--win); }
+  .stat.loss strong { color: var(--loss); }
+
+  main {
+    max-width: 1400px; margin: 0 auto;
+    padding: 24px;
+  }
+  .chart-wrap {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 20px 16px 12px;
+    backdrop-filter: blur(8px);
+    position: relative;
+  }
+  .chart-wrap.loading::after {
+    content: '';
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      var(--cubs-blue-glow) var(--progress, 0%),
+      transparent var(--progress, 0%)
+    );
+    transition: --progress 0.2s;
+  }
+  .chart-status {
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+  .chart-svg {
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    display: block;
+    overflow: visible;
+  }
+
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .legend .swatch {
+    display: inline-block;
+    width: 22px; height: 3px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .legend .swatch.win { background: var(--win); box-shadow: 0 0 8px rgba(74,222,128,0.5); }
+  .legend .swatch.loss { background: var(--loss); box-shadow: 0 0 8px rgba(239,68,68,0.5); }
+
+  /* Tooltip */
+  .tip {
+    position: fixed;
+    background: rgba(4, 8, 26, 0.94);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+    transition: opacity 0.12s;
+    opacity: 0;
+    max-width: 240px;
+  }
+  .tip.show { opacity: 1; }
+  .tip .t-date {
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .tip .t-opp {
+    font-weight: 700; color: var(--ink);
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  .tip .t-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 700;
+  }
+  .tip.win .t-score { color: var(--win); }
+  .tip.loss .t-score { color: var(--loss); }
+  .tip .t-meta {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--ink-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Path styles */
+  .game-path {
+    fill: none;
+    stroke-width: 1.2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    transition: stroke-width 0.15s, opacity 0.15s;
+    cursor: crosshair;
+  }
+  .game-path.win { stroke: var(--win); opacity: 0.22; }
+  .game-path.loss { stroke: var(--loss); opacity: 0.18; }
+  .game-path.live { stroke: var(--gold); opacity: 0.85; stroke-width: 2; }
+  .game-path.dim { opacity: 0.05; }
+  .game-path.hot {
+    stroke-width: 3;
+    opacity: 1;
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  .end-dot { transition: r 0.15s, opacity 0.15s; }
+  .end-dot.win { fill: var(--win); }
+  .end-dot.loss { fill: var(--loss); }
+  .end-dot.live { fill: var(--gold); }
+  .end-dot.dim { opacity: 0.1; }
+  .end-dot.hot { r: 5; }
+
+  .axis text {
+    fill: var(--ink-faint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+  .axis line { stroke: rgba(255,255,255,0.08); }
+  .axis .mid { stroke: rgba(255,255,255,0.18); stroke-dasharray: 3 5; }
+  .axis-label {
+    fill: var(--ink-faint);
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  footer {
+    text-align: center;
+    padding: 24px 16px 40px;
+    color: var(--ink-faint);
+    font-size: 12px;
+  }
+  footer a { color: var(--ink-dim); }
+
+  @media (max-width: 720px) {
+    header { padding: 20px 16px 6px; }
+    main { padding: 16px; }
+    .chart-wrap { padding: 14px 8px 10px; }
+    .chart-svg { aspect-ratio: 4 / 3; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-block">
+    <h1>Every Game, Every Pitch</h1>
+    <div class="sub">
+      Cubs win-probability curves overlaid · 2026 season ·
+      <a href="index.html">← back to magic-number tracker</a>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+</header>
+
+<main>
+  <div class="chart-wrap" id="chart-wrap">
+    <div class="chart-status" id="chart-status">Loading schedule…</div>
+    <svg class="chart-svg" id="chart" viewBox="0 0 1000 420" preserveAspectRatio="none"></svg>
+    <div class="legend">
+      <span><span class="swatch win"></span>Wins</span>
+      <span><span class="swatch loss"></span>Losses</span>
+      <span style="color: var(--gold);"><span class="swatch" style="background: var(--gold); box-shadow: 0 0 8px rgba(201,169,97,0.6);"></span>In progress</span>
+      <span style="margin-left:auto; color: var(--ink-faint);">Hover any line to identify the game · X-axis = game progress · Y-axis = Cubs win probability</span>
+    </div>
+  </div>
+</main>
+
+<div class="tip" id="tip">
+  <div class="t-date" id="t-date"></div>
+  <div class="t-opp" id="t-opp"></div>
+  <div class="t-score" id="t-score"></div>
+  <div class="t-meta" id="t-meta"></div>
+</div>
+
+<footer>
+  Data: <a href="https://statsapi.mlb.com" target="_blank" rel="noopener">MLB Stats API</a> ·
+  Not affiliated with the Chicago Cubs or Major League Baseball.
+</footer>
+
+<script>
+  const TEAM_ID = 112;
+  const SEASON = new Date().getFullYear();
+  const W = 1000, H = 420, PAD_L = 38, PAD_R = 14, PAD_T = 14, PAD_B = 26;
+  const PLOT_W = W - PAD_L - PAD_R;
+  const PLOT_H = H - PAD_T - PAD_B;
+
+  const $ = id => document.getElementById(id);
+  const svg = $('chart');
+  const status = $('chart-status');
+  const chartWrap = $('chart-wrap');
+  const tip = $('tip');
+
+  function fmtDate(d) {
+    return new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  async function fetchSchedule() {
+    const start = `${SEASON}-03-01`;
+    const end = `${SEASON}-11-01`;
+    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${start}&endDate=${end}&gameType=R&hydrate=team,linescore`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('schedule ' + r.status);
+    return r.json();
+  }
+  async function fetchWP(gamePk) {
+    const url = `https://statsapi.mlb.com/api/v1/game/${gamePk}/winProbability`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('wp ' + r.status + ' for ' + gamePk);
+    return r.json();
+  }
+
+  function classify(g) {
+    const status = g.status?.detailedState || '';
+    const code = g.status?.codedGameState;
+    const isFinal = ['F', 'O'].includes(code) || /Final|Game Over|Completed Early/.test(status);
+    const isLive = ['I', 'M', 'P'].includes(code) && !isFinal;
+    const isHome = g.teams.home.team.id === TEAM_ID;
+    const cubsSide = isHome ? g.teams.home : g.teams.away;
+    const oppSide = isHome ? g.teams.away : g.teams.home;
+    let result = null;
+    if (isFinal && cubsSide.score != null && oppSide.score != null) {
+      result = cubsSide.score > oppSide.score ? 'W' : 'L';
+    }
+    return { gamePk: g.gamePk, date: g.gameDate, isHome, isFinal, isLive, result, cubsSide, oppSide, raw: g };
+  }
+
+  // Throttled parallel fetcher: keeps `concurrency` flights in the air at once.
+  async function mapLimit(items, concurrency, fn) {
+    const out = new Array(items.length);
+    let cursor = 0;
+    let done = 0;
+    const total = items.length;
+    async function worker() {
+      while (cursor < items.length) {
+        const i = cursor++;
+        try { out[i] = await fn(items[i], i); }
+        catch (e) { out[i] = null; console.warn('skip', items[i], e); }
+        done++;
+        renderProgress(done, total);
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+    return out;
+  }
+
+  function renderProgress(done, total) {
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    status.textContent = `Loading win-probability data… ${done} / ${total} games`;
+    chartWrap.style.setProperty('--progress', pct + '%');
+    chartWrap.classList.add('loading');
+  }
+
+  function buildAxes() {
+    const axis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    axis.setAttribute('class', 'axis');
+
+    // Horizontal grid lines at 0/25/50/75/100
+    [0, 25, 50, 75, 100].forEach(v => {
+      const y = PAD_T + (1 - v / 100) * PLOT_H;
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', PAD_L);
+      line.setAttribute('x2', W - PAD_R);
+      line.setAttribute('y1', y);
+      line.setAttribute('y2', y);
+      if (v === 50) line.setAttribute('class', 'mid');
+      axis.appendChild(line);
+
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', PAD_L - 6);
+      t.setAttribute('y', y + 3);
+      t.setAttribute('text-anchor', 'end');
+      t.textContent = v + '%';
+      axis.appendChild(t);
+    });
+
+    // X-axis: start, mid, end labels
+    const xLabels = [
+      { x: PAD_L, t: 'FIRST PITCH', anchor: 'start' },
+      { x: PAD_L + PLOT_W / 2, t: 'MIDDLE INNINGS', anchor: 'middle' },
+      { x: W - PAD_R, t: 'FINAL', anchor: 'end' }
+    ];
+    xLabels.forEach(({ x, t, anchor }) => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      el.setAttribute('class', 'axis-label');
+      el.setAttribute('x', x);
+      el.setAttribute('y', H - 8);
+      el.setAttribute('text-anchor', anchor);
+      el.textContent = t;
+      axis.appendChild(el);
+    });
+
+    // Y-axis label
+    const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    yLabel.setAttribute('class', 'axis-label');
+    yLabel.setAttribute('transform', `translate(12, ${PAD_T + PLOT_H / 2}) rotate(-90)`);
+    yLabel.setAttribute('text-anchor', 'middle');
+    yLabel.textContent = 'CUBS WIN PROBABILITY';
+    axis.appendChild(yLabel);
+
+    svg.appendChild(axis);
+  }
+
+  function pathFor(points) {
+    if (!points || points.length < 2) return '';
+    return points.map((p, i) => {
+      const x = PAD_L + p.x * PLOT_W;
+      const y = PAD_T + (1 - p.y / 100) * PLOT_H;
+      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join('');
+  }
+
+  function pointsFromWP(wp, isHome) {
+    if (!Array.isArray(wp) || wp.length < 2) return null;
+    const series = wp.map(p => {
+      const homeWP = p.homeTeamWinProbability;
+      if (homeWP == null) return null;
+      return isHome ? homeWP : (100 - homeWP);
+    }).filter(v => v != null);
+    if (series.length < 2) return null;
+    const n = series.length;
+    return series.map((v, i) => ({ x: i / (n - 1), y: v }));
+  }
+
+  function renderGames(games) {
+    const layer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    layer.setAttribute('id', 'games-layer');
+    svg.appendChild(layer);
+
+    // Render losses first, wins on top, in-progress on very top
+    const order = [...games].sort((a, b) => {
+      const rank = g => g.isLive ? 2 : (g.result === 'W' ? 1 : 0);
+      return rank(a) - rank(b);
+    });
+
+    order.forEach(game => {
+      if (!game.points) return;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const cls = game.isLive ? 'live' : (game.result === 'W' ? 'win' : 'loss');
+      path.setAttribute('class', `game-path ${cls}`);
+      path.setAttribute('d', pathFor(game.points));
+      path.dataset.gamePk = game.gamePk;
+      layer.appendChild(path);
+
+      const last = game.points[game.points.length - 1];
+      const cx = PAD_L + last.x * PLOT_W;
+      const cy = PAD_T + (1 - last.y / 100) * PLOT_H;
+      const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('class', `end-dot ${cls}`);
+      dot.setAttribute('cx', cx.toFixed(1));
+      dot.setAttribute('cy', cy.toFixed(1));
+      dot.setAttribute('r', '2.5');
+      dot.dataset.gamePk = game.gamePk;
+      layer.appendChild(dot);
+    });
+
+    wireHover(games);
+  }
+
+  function wireHover(games) {
+    const byPk = new Map(games.map(g => [String(g.gamePk), g]));
+    const layer = $('games-layer');
+    let active = null;
+
+    function setActive(pk) {
+      if (active === pk) return;
+      active = pk;
+      const elements = layer.querySelectorAll('.game-path, .end-dot');
+      if (!pk) {
+        elements.forEach(el => { el.classList.remove('hot', 'dim'); });
+        tip.classList.remove('show');
+        return;
+      }
+      elements.forEach(el => {
+        if (el.dataset.gamePk === pk) {
+          el.classList.add('hot');
+          el.classList.remove('dim');
+        } else {
+          el.classList.remove('hot');
+          el.classList.add('dim');
+        }
+      });
+      const g = byPk.get(pk);
+      if (g) showTip(g);
+    }
+
+    function showTip(g) {
+      $('t-date').textContent = fmtDate(g.date);
+      const opp = g.oppSide.team.name;
+      $('t-opp').textContent = `${g.isHome ? 'vs' : '@'} ${opp}`;
+      const score = g.isFinal
+        ? `${g.cubsSide.score}–${g.oppSide.score} ${g.result}`
+        : (g.isLive ? `${g.cubsSide.score ?? 0}–${g.oppSide.score ?? 0} · LIVE` : '');
+      $('t-score').textContent = score;
+      const finalWP = g.points?.[g.points.length - 1]?.y;
+      const peak = g.points ? Math.max(...g.points.map(p => p.y)) : null;
+      const valley = g.points ? Math.min(...g.points.map(p => p.y)) : null;
+      $('t-meta').textContent = peak != null
+        ? `peak ${Math.round(peak)}% · low ${Math.round(valley)}%${finalWP != null ? ' · final ' + Math.round(finalWP) + '%' : ''}`
+        : '';
+      tip.className = 'tip show ' + (g.isLive ? 'live' : (g.result === 'W' ? 'win' : 'loss'));
+    }
+
+    layer.addEventListener('mousemove', e => {
+      const t = e.target;
+      const pk = t.dataset?.gamePk;
+      if (pk) setActive(pk);
+      if (tip.classList.contains('show')) {
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let x = e.clientX + 14, y = e.clientY + 14;
+        if (x + tw > innerWidth - 8) x = e.clientX - tw - 14;
+        if (y + th > innerHeight - 8) y = e.clientY - th - 14;
+        tip.style.left = x + 'px';
+        tip.style.top = y + 'px';
+      }
+    });
+    layer.addEventListener('mouseleave', () => setActive(null));
+  }
+
+  function renderStats(games) {
+    const finals = games.filter(g => g.isFinal);
+    const wins = finals.filter(g => g.result === 'W').length;
+    const losses = finals.length - wins;
+    const live = games.filter(g => g.isLive).length;
+
+    // Biggest comeback (largest gap between low WP and final win) and toughest loss
+    let biggestComeback = null, toughestLoss = null;
+    games.forEach(g => {
+      if (!g.points || !g.isFinal) return;
+      const low = Math.min(...g.points.map(p => p.y));
+      const high = Math.max(...g.points.map(p => p.y));
+      if (g.result === 'W') {
+        const swing = 100 - low;
+        if (!biggestComeback || swing > biggestComeback.swing) biggestComeback = { g, swing, low: Math.round(low) };
+      } else {
+        const swing = high;
+        if (!toughestLoss || swing > toughestLoss.swing) toughestLoss = { g, swing, high: Math.round(high) };
+      }
+    });
+
+    const html = `
+      <div class="stat win"><small>Wins</small><strong>${wins}</strong></div>
+      <div class="stat loss"><small>Losses</small><strong>${losses}</strong></div>
+      <div class="stat"><small>Win %</small><strong>${finals.length ? (wins / finals.length).toFixed(3).replace(/^0/, '') : '—'}</strong></div>
+      ${live ? `<div class="stat" style="color: var(--gold);"><small>Live now</small><strong style="color: var(--gold);">${live}</strong></div>` : ''}
+      ${biggestComeback ? `<div class="stat win" title="vs ${biggestComeback.g.oppSide.team.teamName} on ${fmtDate(biggestComeback.g.date)}"><small>Best comeback</small><strong>${biggestComeback.low}% → W</strong></div>` : ''}
+      ${toughestLoss ? `<div class="stat loss" title="vs ${toughestLoss.g.oppSide.team.teamName} on ${fmtDate(toughestLoss.g.date)}"><small>Toughest loss</small><strong>${toughestLoss.high}% → L</strong></div>` : ''}
+    `;
+    $('stats').innerHTML = html;
+  }
+
+  async function main() {
+    buildAxes();
+    try {
+      const sched = await fetchSchedule();
+      const allGames = [];
+      (sched.dates || []).forEach(d => (d.games || []).forEach(g => allGames.push(classify(g))));
+      const candidates = allGames.filter(g => g.isFinal || g.isLive);
+      candidates.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      if (!candidates.length) {
+        status.textContent = 'No completed games yet for this season.';
+        chartWrap.classList.remove('loading');
+        return;
+      }
+      status.textContent = `Loading win-probability data… 0 / ${candidates.length} games`;
+      renderProgress(0, candidates.length);
+
+      // Pull WP timelines in parallel (capped concurrency to be polite to the API).
+      await mapLimit(candidates, 6, async game => {
+        const wp = await fetchWP(game.gamePk);
+        game.points = pointsFromWP(wp, game.isHome);
+      });
+
+      renderGames(candidates);
+      renderStats(candidates);
+      chartWrap.classList.remove('loading');
+      status.textContent = `${candidates.filter(g => g.points).length} games · hover any line to identify it`;
+    } catch (e) {
+      console.error(e);
+      status.textContent = 'Couldn’t reach the MLB Stats API. Try a refresh.';
+      chartWrap.classList.remove('loading');
+    }
+  }
+
+  main();
+</script>
+</body>
+</html>

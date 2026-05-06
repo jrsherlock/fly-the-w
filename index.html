@@ -1316,7 +1316,7 @@
     return map;
   }
   async function fetchSchedule(startDate, endDate) {
-    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${startDate}&endDate=${endDate}&hydrate=team,linescore,decisions,probablePitcher`;
+    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${startDate}&endDate=${endDate}&gameType=R&hydrate=team,linescore,decisions,probablePitcher`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('schedule ' + r.status);
     return r.json();
