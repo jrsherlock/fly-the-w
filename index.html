@@ -1315,6 +1315,74 @@
     .next-game-card { padding: 20px; }
     .next-game-countdown { text-align: left; }
   }
+
+  /* Mobile polish for the live card — declared LAST so it wins the cascade
+     against the default `.live-stats-row { grid-template-columns: 1fr 1fr }`
+     rule that's defined further down the stylesheet than the earlier
+     `@media (max-width: 720px)` block. */
+  @media (max-width: 720px) {
+    .next-game-card.live-now { padding: 18px 14px; gap: 14px; }
+
+    /* Live row: vertical flex, centered, score wraps if it has to. */
+    .live-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+    .live-score {
+      flex-wrap: wrap;
+      justify-content: center;
+      font-size: clamp(20px, 6vw, 28px);
+      gap: 6px;
+    }
+    .live-score .lbl { font-size: 0.55em; }
+    .live-score .dash { margin: 0 4px; }
+
+    /* Stats row (batter / pitcher) stacks 1-col with smaller headshots. */
+    .live-stats-row { grid-template-columns: 1fr; gap: 8px; }
+    .stat-cell.with-headshot { gap: 10px; padding: 8px 10px; }
+    .stat-cell.with-headshot .headshot { width: 44px; height: 44px; border-width: 1.5px; }
+    .stat-cell .name { font-size: 13px; }
+    .stat-cell .line { font-size: 11px; }
+
+    /* Linescore: smaller cells; still horizontally scrolls if needed. */
+    .live-linescore table { font-size: 11px; }
+    .live-linescore th, .live-linescore td { padding: 3px 4px; min-width: 18px; }
+    .live-linescore td.team { min-width: 44px; padding-left: 0; font-size: 11px; }
+
+    /* Strike-zone row stacks; SVG capped so it's not the size of the screen. */
+    .live-zone-row { grid-template-columns: 1fr; gap: 10px; }
+    .live-zone .zone-svg { max-width: 160px; align-self: center; margin: 0 auto; }
+
+    /* WP sparkline */
+    .live-wp-spark .spark-svg { height: 44px; }
+    .live-wp-spark .spark-header { flex-wrap: wrap; gap: 4px; }
+    .live-wp-spark .spark-meta { font-size: 9px; }
+
+    /* Pitch + Statcast pills */
+    .live-pitch, .live-statcast { font-size: 11px; padding: 7px 10px; gap: 8px; }
+
+    .live-last { font-size: 12px; padding: 7px 10px; }
+    .live-meta { gap: 6px 14px; font-size: 10px; }
+
+    /* NL Central radar: 2 columns on tablet/large phone, 1 below. */
+    .nlc-radar { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .nlc-game { padding: 9px 10px; font-size: 13px; }
+    .nlc-row .abbr { font-size: 11px; }
+  }
+
+  @media (max-width: 480px) {
+    .live-score { font-size: 22px; gap: 6px; }
+    .live-score .lbl { font-size: 0.5em; }
+    .live-score .dash { margin: 0 2px; }
+    .bases { width: 56px; height: 56px; }
+    .live-count .bs { font-size: 19px; }
+    .live-wp strong { font-size: 19px; }
+    .stat-cell.with-headshot .headshot { width: 40px; height: 40px; }
+    .nlc-radar { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
