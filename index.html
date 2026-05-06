@@ -445,7 +445,136 @@
   @media (max-width: 720px) {
     .live-row { grid-template-columns: 1fr; gap: 14px; justify-items: center; text-align: center; }
     .live-action { grid-template-columns: 1fr; }
+    .live-stats-row { grid-template-columns: 1fr; }
   }
+
+  /* Last pitch */
+  .live-pitch {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(58,111,255,0.06);
+    border-left: 2px solid var(--cubs-blue-glow);
+    border-radius: 0 6px 6px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .live-pitch small {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+  }
+  .live-pitch .velo { color: var(--gold); font-weight: 700; }
+  .live-pitch .ptype { color: var(--ink); font-weight: 600; }
+  .live-pitch .pres { color: var(--ink); }
+  .live-pitch .sep { color: var(--ink-faint); }
+
+  /* Inning-by-inning linescore strip */
+  .live-linescore {
+    width: 100%;
+    overflow-x: auto;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 12px;
+  }
+  .live-linescore table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .live-linescore th, .live-linescore td {
+    padding: 4px 6px;
+    text-align: center;
+    min-width: 22px;
+  }
+  .live-linescore th {
+    color: var(--ink-faint); font-weight: 700;
+    font-size: 10px; letter-spacing: 0.04em;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .live-linescore th.cur { color: var(--cubs-blue-glow); }
+  .live-linescore td { color: var(--ink); }
+  .live-linescore td.team {
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700; letter-spacing: 0.1em;
+    color: var(--ink-dim);
+    padding-left: 0;
+    min-width: 56px;
+  }
+  .live-linescore td.empty { color: var(--ink-faint); }
+  .live-linescore td.cur { color: var(--cubs-blue-glow); font-weight: 700; }
+  .live-linescore td.tot {
+    color: var(--ink); font-weight: 700;
+    border-left: 1px solid rgba(255,255,255,0.1);
+  }
+  .live-linescore td.tot.r { color: var(--gold); }
+
+  /* Pitcher / batter stat blocks */
+  .live-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-cell {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 9px 12px;
+  }
+  .stat-cell small {
+    display: block;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .stat-cell .name {
+    font-size: 13px; font-weight: 700; color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .stat-cell .line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-dim);
+    letter-spacing: 0.02em;
+  }
+  .stat-cell .line .sep { color: var(--ink-faint); margin: 0 4px; }
+  .stat-cell .line .hot { color: var(--gold); font-weight: 700; }
+
+  /* Game meta: weather + attendance */
+  .live-meta {
+    display: flex; flex-wrap: wrap;
+    gap: 8px 18px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+  }
+  .live-meta .item { display: inline-flex; align-items: center; gap: 6px; }
+  .live-meta small {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+  }
+  .live-meta .item.wind-out { color: var(--win); }
+  .live-meta .item.wind-in { color: var(--cubs-blue-glow); }
+  .live-meta .icon { opacity: 0.85; }
+
+  /* Coming up: on-deck → in-the-hole */
+  .live-ondeck {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px;
+    color: var(--ink-dim);
+    padding: 6px 0 0;
+  }
+  .live-ondeck small {
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+  }
+  .live-ondeck strong { color: var(--ink); font-weight: 600; }
+  .live-ondeck .arrow { color: var(--ink-faint); }
 
   /* Win probability chart in highlights modal */
   .wp-chart {
@@ -1355,6 +1484,110 @@
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
   }
 
+  // Look up a player's box-score record by ID across both teams. Boxscore keys
+  // players as `ID12345`, and either side may be batting / pitching depending
+  // on the inning half.
+  function findBoxPlayer(boxscore, playerId) {
+    if (!playerId || !boxscore?.teams) return null;
+    for (const sideKey of ['home', 'away']) {
+      const p = boxscore.teams[sideKey]?.players?.[`ID${playerId}`];
+      if (p) return p;
+    }
+    return null;
+  }
+
+  // Pitcher's today line: 2.1 IP · 3H · 1R · 4K · 1BB · 42P
+  function pitcherTodayLine(stats) {
+    if (!stats) return '';
+    const ip = stats.inningsPitched ?? '0.0';
+    const h = stats.hits ?? 0;
+    const r = stats.runs ?? 0;
+    const er = stats.earnedRuns ?? 0;
+    const k = stats.strikeOuts ?? 0;
+    const bb = stats.baseOnBalls ?? 0;
+    const np = stats.numberOfPitches ?? stats.pitchesThrown ?? 0;
+    return `<span>${ip} IP</span><span class="sep">·</span>` +
+      `<span>${h}H</span><span class="sep">·</span>` +
+      `<span>${r}R${er !== r ? ` (${er}ER)` : ''}</span><span class="sep">·</span>` +
+      `<span class="${k >= 5 ? 'hot' : ''}">${k}K</span><span class="sep">·</span>` +
+      `<span>${bb}BB</span><span class="sep">·</span>` +
+      `<span>${np}P</span>`;
+  }
+
+  // Batter line: 2-3 today · .278/.834 OPS
+  function batterLine(today, season) {
+    const parts = [];
+    if (today && today.atBats != null) {
+      const h = today.hits ?? 0;
+      const ab = today.atBats ?? 0;
+      const hr = today.homeRuns ?? 0;
+      const rbi = today.rbi ?? 0;
+      const bb = today.baseOnBalls ?? 0;
+      let today_str = `${h}-${ab}`;
+      const extras = [];
+      if (hr) extras.push(`${hr} HR`);
+      if (rbi) extras.push(`${rbi} RBI`);
+      if (bb && !ab) extras.push(`${bb} BB`);
+      if (extras.length) today_str += ` (${extras.join(', ')})`;
+      parts.push(`<span class="${h >= 2 || hr ? 'hot' : ''}">${today_str} today</span>`);
+    }
+    if (season && (season.avg || season.ops)) {
+      parts.push(`<span>${season.avg ?? '.---'}<span class="sep">/</span>${season.ops ?? '.---'} OPS</span>`);
+    }
+    return parts.join('<span class="sep">·</span>');
+  }
+
+  // Last pitch from the in-progress at-bat: type · velo · result.
+  function lastPitchSummary(currentPlay) {
+    if (!currentPlay) return null;
+    const pitches = (currentPlay.playEvents || []).filter(e => e.isPitch);
+    const last = pitches[pitches.length - 1];
+    if (!last) return null;
+    const type = last.details?.type?.description || '';
+    const velo = last.pitchData?.startSpeed;
+    const call = last.details?.description || last.details?.call?.description || '';
+    return { type, velo, call, count: pitches.length };
+  }
+
+  function renderLineScoreStrip(linescore, awayLabel, homeLabel) {
+    const innings = linescore.innings || [];
+    const totals = linescore.teams || {};
+    const cur = linescore.currentInning;
+    const inningCount = Math.max(9, innings.length);
+    const headerCells = Array.from({ length: inningCount }, (_, i) => {
+      const n = i + 1;
+      return `<th class="${n === cur ? 'cur' : ''}">${n}</th>`;
+    }).join('');
+    const sideRow = (sideKey, label) => {
+      const cells = Array.from({ length: inningCount }, (_, i) => {
+        const inn = innings[i];
+        const n = i + 1;
+        if (!inn) return `<td class="empty">·</td>`;
+        const runs = inn[sideKey]?.runs;
+        if (runs == null) return `<td class="empty">·</td>`;
+        return `<td class="${n === cur ? 'cur' : ''}">${runs}</td>`;
+      }).join('');
+      const t = totals[sideKey] || {};
+      return `<tr>
+        <td class="team">${label}</td>
+        ${cells}
+        <td class="tot r">${t.runs ?? 0}</td>
+        <td class="tot">${t.hits ?? 0}</td>
+        <td class="tot">${t.errors ?? 0}</td>
+      </tr>`;
+    };
+    return `
+      <div class="live-linescore">
+        <table>
+          <thead><tr><th></th>${headerCells}<th>R</th><th>H</th><th>E</th></tr></thead>
+          <tbody>
+            ${sideRow('away', awayLabel)}
+            ${sideRow('home', homeLabel)}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
   function renderLiveGameCard(c, feed, wp) {
     const linescore = feed?.liveData?.linescore || {};
     const offense = linescore.offense || {};
@@ -1384,6 +1617,7 @@
     const wpClass = cubsWPnum == null ? '' : (cubsWPnum >= 70 ? 'hot' : cubsWPnum >= 50 ? 'warm' : 'cold');
 
     // Last described play.
+    const currentPlay = feed?.liveData?.plays?.currentPlay;
     const allPlays = feed?.liveData?.plays?.allPlays || [];
     let lastPlay = '';
     for (let i = allPlays.length - 1; i >= 0; i--) {
@@ -1394,8 +1628,62 @@
     const batter = offense.batter?.fullName;
     const pitcher = defense.pitcher?.fullName;
 
-    const cubsLabel = c.isHome ? 'CUBS' : 'CUBS';
+    // Box-score-driven stat lines.
+    const boxscore = feed?.liveData?.boxscore || {};
+    const pitcherBox = findBoxPlayer(boxscore, defense.pitcher?.id);
+    const batterBox = findBoxPlayer(boxscore, offense.batter?.id);
+    const pitcherStat = pitcherBox?.stats?.pitching;
+    const batterToday = batterBox?.stats?.batting;
+    const batterSeason = batterBox?.seasonStats?.batting;
+    const pitcherLineHTML = pitcherTodayLine(pitcherStat);
+    const batterLineHTML = batterLine(batterToday, batterSeason);
+
+    // Last pitch detail.
+    const pitch = lastPitchSummary(currentPlay);
+    const lastPitchHTML = pitch ? `
+      <div class="live-pitch">
+        <small>Last pitch</small>
+        ${pitch.velo ? `<span class="velo">${pitch.velo.toFixed(1)} mph</span><span class="sep">·</span>` : ''}
+        ${pitch.type ? `<span class="ptype">${pitch.type}</span><span class="sep">·</span>` : ''}
+        ${pitch.call ? `<span class="pres">${pitch.call}</span>` : ''}
+      </div>` : '';
+
+    // On-deck → in-the-hole.
+    const onDeckName = offense.onDeck?.fullName;
+    const inHoleName = offense.inHole?.fullName;
+    const upcomingHTML = (onDeckName || inHoleName) ? `
+      <div class="live-ondeck">
+        <small>Coming up</small>
+        ${onDeckName ? `<strong>${onDeckName}</strong>` : ''}
+        ${onDeckName && inHoleName ? `<span class="arrow">→</span>` : ''}
+        ${inHoleName ? `<strong>${inHoleName}</strong>` : ''}
+      </div>` : '';
+
+    // Weather + attendance. Wind direction matters at Wrigley — color it: out
+    // (toward bleachers) helps hitters, in (toward plate) helps pitchers.
+    const weather = feed?.gameData?.weather || {};
+    const gameInfo = feed?.gameData?.gameInfo || {};
+    const wind = weather.wind || '';
+    const windClass = /\bOut\b/i.test(wind) ? 'wind-out'
+      : /\bIn\b/i.test(wind) ? 'wind-in'
+      : '';
+    const windIcon = /\bOut\b/i.test(wind) ? '↗'
+      : /\bIn\b/i.test(wind) ? '↙'
+      : /Calm|None/i.test(wind) ? '·'
+      : '→';
+    const tempStr = weather.temp ? `${weather.temp}°` : '';
+    const weatherStr = [tempStr, weather.condition].filter(Boolean).join(' · ');
+    const attendance = gameInfo.attendance;
+    const metaBits = [];
+    if (weatherStr) metaBits.push(`<span class="item"><small>Weather</small>${weatherStr}</span>`);
+    if (wind) metaBits.push(`<span class="item ${windClass}"><small>Wind</small><span class="icon">${windIcon}</span> ${wind}</span>`);
+    if (attendance) metaBits.push(`<span class="item"><small>Attendance</small>${attendance.toLocaleString()}</span>`);
+    const metaHTML = metaBits.length ? `<div class="live-meta">${metaBits.join('')}</div>` : '';
+
+    const cubsLabel = 'CUBS';
     const oppLabel = (c.oppSide.team.abbreviation || oppName).toUpperCase().slice(0, 4);
+    const awayLabel = c.isHome ? oppLabel : cubsLabel;
+    const homeLabel = c.isHome ? cubsLabel : oppLabel;
 
     return `
       <div class="next-game-card live-now">
@@ -1422,11 +1710,25 @@
             <strong>${wpDisplay}</strong>
           </div>
         </div>
-        <div class="live-action">
-          ${batter ? `<div><small>At bat</small><strong>${batter}</strong></div>` : '<div></div>'}
-          ${pitcher ? `<div><small>Pitching</small><strong>${pitcher}</strong></div>` : '<div></div>'}
-          ${lastPlay ? `<div class="live-last">${lastPlay}</div>` : ''}
+        ${renderLineScoreStrip(linescore, awayLabel, homeLabel)}
+        <div class="live-stats-row">
+          ${batter ? `
+            <div class="stat-cell">
+              <small>At bat</small>
+              <div class="name">${batter}</div>
+              ${batterLineHTML ? `<div class="line">${batterLineHTML}</div>` : ''}
+            </div>` : '<div></div>'}
+          ${pitcher ? `
+            <div class="stat-cell">
+              <small>Pitching</small>
+              <div class="name">${pitcher}</div>
+              ${pitcherLineHTML ? `<div class="line">${pitcherLineHTML}</div>` : ''}
+            </div>` : '<div></div>'}
         </div>
+        ${lastPitchHTML}
+        ${lastPlay ? `<div class="live-last">${lastPlay}</div>` : ''}
+        ${upcomingHTML}
+        ${metaHTML}
       </div>`;
   }
 
