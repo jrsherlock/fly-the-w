@@ -715,6 +715,15 @@
   .nlc-row .num { font-weight: 700; min-width: 1.4ch; text-align: right; }
   .nlc-row.lead .num { color: var(--gold); }
   .nlc-row.lead .abbr { color: var(--ink); }
+  .nlc-row .prob {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; font-weight: 600;
+    color: var(--ink-dim);
+    text-align: right;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    max-width: 70%;
+  }
+  .nlc-row.sched-row { padding: 1px 0; }
 
   /* Win probability chart in highlights modal */
   .wp-chart {
@@ -1326,16 +1335,26 @@
     return r.json();
   }
 
-  // Today's slate for the four chasers + Cubs. We dedupe (intra-division
-  // matchups appear under both teams) and filter the Cubs game out before
-  // rendering, since it already has its own live card.
+  // Today's slate for the four chasers + Cubs. We query a 3-day window
+  // (yesterday→tomorrow in UTC) and filter to "today" in the user's local
+  // timezone — `isoDate(new Date())` alone returns UTC, which rolls forward
+  // past midnight UTC and would miss tonight's games for CT/MT/PT users.
+  // We also dedupe (intra-division matchups appear under both teams) and
+  // filter the Cubs game out before rendering, since it already has its
+  // own live card.
   async function fetchNLCentralToday() {
-    const today = isoDate(new Date());
+    const now = new Date();
+    const ystr = new Date(now); ystr.setDate(now.getDate() - 1);
+    const tmr = new Date(now); tmr.setDate(now.getDate() + 1);
     const teamIds = '113,134,138,158,112';
-    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${teamIds}&date=${today}&hydrate=team,linescore`;
+    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${teamIds}&startDate=${isoDate(ystr)}&endDate=${isoDate(tmr)}&hydrate=team,linescore,probablePitcher`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('nlc-today ' + r.status);
     return r.json();
+  }
+  function localDateKey(d) {
+    const dt = new Date(d);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
   }
 
   // Highlights: lazy-fetched per gamePk, cached for the session.
@@ -1863,9 +1882,13 @@
   function dedupeNLCGames(scheduleJson) {
     const seen = new Set();
     const games = [];
+    const today = localDateKey(new Date());
     (scheduleJson.dates || []).forEach(day => {
       (day.games || []).forEach(g => {
         if (seen.has(g.gamePk)) return;
+        // Filter to "today" in the viewer's local timezone — gameDate is UTC,
+        // so a 7 PM CT game sits in tomorrow's UTC bucket on the API side.
+        if (localDateKey(g.gameDate) !== today) return;
         seen.add(g.gamePk);
         games.push(g);
       });
@@ -1911,10 +1934,29 @@
     } else {
       stateStr = fmtTime(g.gameDate);
     }
-    const homeScore = home.score, awayScore = away.score;
+    // Score reading: prefer team-level score, fall back to linescore.runs.
+    const lsRuns = (side) => ls.teams?.[side]?.runs;
+    const homeScore = home.score ?? lsRuns('home');
+    const awayScore = away.score ?? lsRuns('away');
+    const hasScore = homeScore != null || awayScore != null;
     const homeLead = homeScore != null && awayScore != null && homeScore > awayScore;
     const awayLead = homeScore != null && awayScore != null && awayScore > homeScore;
     const cls = isLive ? 'live' : isFinal ? 'final' : 'sched';
+
+    // Scheduled games haven't put runs on the board yet — showing dashes
+    // looks like missing data. Swap in the probable-pitcher matchup so the
+    // card has something useful to read.
+    if (!isLive && !isFinal && !hasScore) {
+      const homeP = lastName(home.probablePitcher?.fullName) || 'TBD';
+      const awayP = lastName(away.probablePitcher?.fullName) || 'TBD';
+      return `
+        <div class="nlc-game ${cls}">
+          <div class="nlc-state">${stateStr}</div>
+          <div class="nlc-row sched-row"><span class="abbr">${awayAbbr}</span><span class="prob">${awayP}</span></div>
+          <div class="nlc-row sched-row"><span class="abbr">${homeAbbr}</span><span class="prob">${homeP}</span></div>
+        </div>`;
+    }
+
     const dispScore = (s) => (s == null ? '–' : s);
     return `
       <div class="nlc-game ${cls}">
