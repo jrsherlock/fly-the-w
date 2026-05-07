@@ -356,7 +356,10 @@
   .next-game-card.live-now {
     flex-direction: column;
     align-items: stretch;
-    gap: 18px;
+    gap: 12px;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 22px 24px;
     background:
       linear-gradient(135deg, rgba(204,52,51,0.22), rgba(14,51,134,0.5)),
       var(--card);
@@ -1320,21 +1323,21 @@
   .live-scoreboard {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    gap: 24px;
+    gap: 16px;
     align-items: center;
-    padding: 8px 8px 14px;
+    padding: 4px 0 6px;
   }
   .lsb-team {
     display: flex; flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 1px;
     text-align: center;
     min-width: 0;
   }
   .lsb-logo {
-    width: 64px; height: 64px;
+    width: 44px; height: 44px;
     display: flex; align-items: center; justify-content: center;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     filter: drop-shadow(0 4px 14px rgba(0,0,0,0.4));
   }
   .lsb-logo img {
@@ -1344,7 +1347,7 @@
   }
   .lsb-score {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(44px, 9vw, 72px);
+    font-size: clamp(32px, 6vw, 48px);
     line-height: 0.95;
     color: var(--ink);
     font-weight: 400;
@@ -1352,18 +1355,18 @@
   }
   .lsb-team.lead .lsb-score {
     color: var(--gold);
-    text-shadow: 0 0 28px rgba(201,169,97,0.4);
+    text-shadow: 0 0 24px rgba(201,169,97,0.4);
   }
   .lsb-abbr {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
+    font-size: 13px;
     letter-spacing: 0.14em;
     color: var(--ink-dim);
-    margin-top: 2px;
+    margin-top: 1px;
   }
   .lsb-record {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--ink-faint);
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -1371,33 +1374,33 @@
   .lsb-mid {
     display: flex; flex-direction: column;
     align-items: center;
-    gap: 8px;
-    min-width: 110px;
-    padding-top: 8px;
+    gap: 6px;
+    min-width: 96px;
+    padding-top: 4px;
   }
   .lsb-state {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 17px;
-    letter-spacing: 0.1em;
+    font-size: 15px;
+    letter-spacing: 0.08em;
     color: var(--cubs-blue-glow);
     text-align: center;
     line-height: 1.1;
   }
   .lsb-state .arr { margin-right: 2px; }
-  .lsb-mid .bases { width: 56px; height: 56px; }
+  .lsb-mid .bases { width: 44px; height: 44px; }
   .lsb-mid .lsb-wp {
-    margin-top: 6px;
+    margin-top: 2px;
     text-align: center;
   }
   .lsb-mid .lsb-wp .lbl {
     display: block;
-    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--ink-faint); font-weight: 700;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
   }
   .lsb-mid .lsb-wp strong {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 16px;
+    font-size: 14px;
     color: var(--cubs-blue-glow);
   }
   .lsb-mid .lsb-wp.cold strong { color: var(--loss); }
@@ -1408,10 +1411,9 @@
   .live-counts {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    padding: 12px 8px;
-    border-top: 1px solid rgba(255,255,255,0.08);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    gap: 8px;
+    padding: 8px 4px;
+    border-top: 1px solid rgba(255,255,255,0.06);
   }
   .count-block {
     display: flex; align-items: center; justify-content: center;
@@ -1449,27 +1451,27 @@
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     gap: 12px;
-    align-items: center;
-    padding: 16px 4px 4px;
+    align-items: start;
+    padding: 8px 0 2px;
   }
   .lm-side {
     display: flex; flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     text-align: center;
     min-width: 0;
   }
   .lm-label {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 5px;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
     color: var(--ink-faint); font-weight: 700;
   }
   .lm-label img {
-    width: 16px; height: 16px;
+    width: 14px; height: 14px;
     object-fit: contain;
   }
   .lm-photo {
-    width: 64px; height: 64px;
+    width: 52px; height: 52px;
     border-radius: 50%;
     border: 2px solid rgba(255,255,255,0.2);
     object-fit: cover; object-position: top center;
@@ -1479,7 +1481,7 @@
   .lm-side.cubs .lm-photo { border-color: rgba(58,111,255,0.55); }
   .lm-side.opp .lm-photo { border-color: rgba(204,52,51,0.55); }
   .lm-name {
-    font-size: 14px; font-weight: 700;
+    font-size: 13px; font-weight: 700;
     color: var(--ink);
     line-height: 1.2;
     overflow: hidden; text-overflow: ellipsis;
@@ -1489,27 +1491,29 @@
     color: var(--cubs-blue-glow);
     font-weight: 600; letter-spacing: 0.04em;
     margin-left: 4px;
-    font-size: 11px;
+    font-size: 10px;
   }
   .lm-line {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--ink-dim);
+    font-size: 10px; color: var(--ink-dim);
     line-height: 1.4;
   }
   .lm-line .hot { color: var(--gold); font-weight: 700; }
   .lm-line .sep { color: var(--ink-faint); margin: 0 4px; }
   .lm-vs {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
+    font-size: 14px;
     letter-spacing: 0.08em;
     color: var(--ink-faint);
+    align-self: center;
+    padding-top: 28px;
   }
 
   .live-matchup-extra {
-    display: flex; justify-content: center; gap: 28px;
-    font-size: 12px; letter-spacing: 0.04em;
+    display: flex; justify-content: center; gap: 20px;
+    font-size: 11px; letter-spacing: 0.02em;
     color: var(--ink-dim);
-    padding: 6px 4px 8px;
+    padding: 2px 4px 4px;
     flex-wrap: wrap;
   }
   .live-matchup-extra .lme-label {
@@ -1522,17 +1526,19 @@
     font-family: 'JetBrains Mono', monospace;
   }
 
-  /* Strike zone v2 — bigger, centered, numbered pitches */
+  /* Strike zone v2 — centered, numbered pitches */
   .live-zone-v2 {
     display: flex; flex-direction: column;
     align-items: center;
-    padding: 6px 0 4px;
+    padding: 4px 0 2px;
+    border-top: 1px solid rgba(255,255,255,0.06);
   }
   .live-zone-v2 .lzv-svg {
     width: 100%;
-    max-width: 240px;
+    max-width: 200px;
     height: auto;
     display: block;
+    overflow: hidden;
   }
   .live-zone-v2 .lzv-legend {
     display: flex; gap: 14px; margin-top: 6px;
@@ -1557,9 +1563,9 @@
   /* Pitch sequence (horizontal cards, newest first) */
   .pitch-sequence {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     overflow-x: auto;
-    padding: 6px 4px 10px;
+    padding: 4px 2px 6px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
   }
@@ -1569,22 +1575,22 @@
   }
   .pitch-card {
     flex: 0 0 auto;
-    min-width: 102px;
+    min-width: 86px;
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px;
-    padding: 10px 8px;
+    border-radius: 8px;
+    padding: 7px 6px;
     text-align: center;
     display: flex; flex-direction: column;
-    gap: 4px;
+    gap: 3px;
   }
   .pitch-card .pc-num {
-    width: 24px; height: 24px;
+    width: 22px; height: 22px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px; font-weight: 700;
+    font-size: 11px; font-weight: 700;
     color: var(--bg-0);
     background: var(--ink-faint);
   }
@@ -1615,6 +1621,21 @@
     font-size: 11px; color: var(--ink-dim);
     font-weight: 700;
     margin-top: 1px;
+  }
+
+  /* Subtler secondary blocks inside the live card. */
+  .live-now .live-wp-spark { padding-top: 8px; opacity: 0.9; }
+  .live-now .live-wp-spark .spark-svg { height: 36px; }
+  .live-now .live-meta {
+    font-size: 10px; padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    opacity: 0.75;
+  }
+  .live-now .live-linescore { padding-top: 8px; }
+  .live-now .live-last {
+    font-size: 13px; padding: 8px 10px;
+    background: rgba(255,200,100,0.06);
+    border-left-color: var(--gold);
   }
 
   @media (max-width: 720px) {
@@ -2526,6 +2547,11 @@
       const c = e.pitchData.coordinates;
       const x = xAt(c.pX);
       const y = yAt(c.pZ);
+      // Clamp far-outside pitches to the viewport edge with a marker so they
+      // don't render as floating dots far outside the SVG bounds.
+      const xClamped = Math.max(8, Math.min(W - 8, x));
+      const yClamped = Math.max(8, Math.min(H - 8, y));
+      const wasClamped = xClamped !== x || yClamped !== y;
       const bucket = pitchCallBucket(e);
       let fill;
       if (bucket.cls === 'in-play') fill = 'var(--gold)';
@@ -2539,16 +2565,16 @@
         e.pitchData?.startSpeed != null ? `${e.pitchData.startSpeed.toFixed(1)} mph` : '',
         e.details?.description
       ].filter(Boolean).join(' · ');
-      return `<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})">
+      return `<g transform="translate(${xClamped.toFixed(1)},${yClamped.toFixed(1)})" opacity="${wasClamped ? 0.6 : 1}">
         <circle r="11" fill="${fill}" stroke="white" stroke-width="2"/>
         <text y="4" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#04081a">${num}</text>
-        <title>${tip}</title>
+        <title>${tip}${wasClamped ? ' (off-zone)' : ''}</title>
       </g>`;
     }).join('');
 
     return `
       <div class="live-zone-v2">
-        <svg viewBox="0 0 ${W} ${H}" class="lzv-svg" aria-label="Pitch locations for current at-bat">
+        <svg viewBox="0 0 ${W} ${H}" class="lzv-svg" preserveAspectRatio="xMidYMid meet" aria-label="Pitch locations for current at-bat">
           ${subzones.join('')}
           <rect x="${szLeft.toFixed(1)}" y="${szTop.toFixed(1)}" width="${(szRight - szLeft).toFixed(1)}" height="${(szBot - szTop).toFixed(1)}" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
           ${dots}
@@ -3051,14 +3077,13 @@
         <div class="next-game-label" style="color: var(--cubs-red);">● LIVE · ${halfLabel}</div>
         ${scoreboardHTML}
         ${countsHTML}
+        ${lastPlay ? `<div class="live-last">${lastPlay}</div>` : ''}
         ${matchupHTML}
         ${zoneV2HTML}
         ${pitchSeqHTML}
         ${sc_HTML}
-        ${lastPlay ? `<div class="live-last">${lastPlay}</div>` : ''}
         ${renderLineScoreStrip(linescore, awayLabel, homeLabel)}
         ${wpSparkHTML}
-        ${renderLiveClipsStrip(clips)}
         ${metaHTML}
       </div>`;
   }
