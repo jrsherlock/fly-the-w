@@ -1305,6 +1305,307 @@
     pointer-events: none; z-index: 99;
   }
 
+  /* ===== Live card v2 — ESPN-style scoreboard ===== */
+  .live-scoreboard {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 24px;
+    align-items: center;
+    padding: 8px 8px 14px;
+  }
+  .lsb-team {
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+    min-width: 0;
+  }
+  .lsb-logo {
+    width: 64px; height: 64px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 4px 14px rgba(0,0,0,0.4));
+  }
+  .lsb-logo img {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .lsb-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(44px, 9vw, 72px);
+    line-height: 0.95;
+    color: var(--ink);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+  .lsb-team.lead .lsb-score {
+    color: var(--gold);
+    text-shadow: 0 0 28px rgba(201,169,97,0.4);
+  }
+  .lsb-abbr {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.14em;
+    color: var(--ink-dim);
+    margin-top: 2px;
+  }
+  .lsb-record {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .lsb-mid {
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 110px;
+    padding-top: 8px;
+  }
+  .lsb-state {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    letter-spacing: 0.1em;
+    color: var(--cubs-blue-glow);
+    text-align: center;
+    line-height: 1.1;
+  }
+  .lsb-state .arr { margin-right: 2px; }
+  .lsb-mid .bases { width: 56px; height: 56px; }
+  .lsb-mid .lsb-wp {
+    margin-top: 6px;
+    text-align: center;
+  }
+  .lsb-mid .lsb-wp .lbl {
+    display: block;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .lsb-mid .lsb-wp strong {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    color: var(--cubs-blue-glow);
+  }
+  .lsb-mid .lsb-wp.cold strong { color: var(--loss); }
+  .lsb-mid .lsb-wp.warm strong { color: var(--gold); }
+  .lsb-mid .lsb-wp.hot strong { color: var(--win); }
+
+  /* Count dots row (BALLS / STRIKES / OUTS) */
+  .live-counts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 12px 8px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .count-block {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+  }
+  .count-block label {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+  }
+  .count-block .dots { display: flex; gap: 5px; }
+  .count-block .dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.18);
+  }
+  .count-block.balls .dot.on {
+    background: var(--win);
+    border-color: var(--win);
+    box-shadow: 0 0 6px rgba(74,222,128,0.7);
+  }
+  .count-block.strikes .dot.on {
+    background: var(--cubs-red);
+    border-color: var(--cubs-red);
+    box-shadow: 0 0 6px rgba(204,52,51,0.7);
+  }
+  .count-block.outs .dot.on {
+    background: var(--cubs-red);
+    border-color: var(--cubs-red);
+    box-shadow: 0 0 6px rgba(204,52,51,0.7);
+  }
+
+  /* Pitcher | vs | Batter matchup panel */
+  .live-matchup {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 16px 4px 4px;
+  }
+  .lm-side {
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    min-width: 0;
+  }
+  .lm-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+  }
+  .lm-label img {
+    width: 16px; height: 16px;
+    object-fit: contain;
+  }
+  .lm-photo {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    object-fit: cover; object-position: top center;
+    background: rgba(255,255,255,0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .lm-side.cubs .lm-photo { border-color: rgba(58,111,255,0.55); }
+  .lm-side.opp .lm-photo { border-color: rgba(204,52,51,0.55); }
+  .lm-name {
+    font-size: 14px; font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+    overflow: hidden; text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .lm-name .role {
+    color: var(--cubs-blue-glow);
+    font-weight: 600; letter-spacing: 0.04em;
+    margin-left: 4px;
+    font-size: 11px;
+  }
+  .lm-line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-dim);
+    line-height: 1.4;
+  }
+  .lm-line .hot { color: var(--gold); font-weight: 700; }
+  .lm-line .sep { color: var(--ink-faint); margin: 0 4px; }
+  .lm-vs {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+  }
+
+  .live-matchup-extra {
+    display: flex; justify-content: center; gap: 28px;
+    font-size: 12px; letter-spacing: 0.04em;
+    color: var(--ink-dim);
+    padding: 6px 4px 8px;
+    flex-wrap: wrap;
+  }
+  .live-matchup-extra .lme-label {
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 700;
+    margin-right: 5px;
+  }
+  .live-matchup-extra strong {
+    color: var(--ink); font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Strike zone v2 — bigger, centered, numbered pitches */
+  .live-zone-v2 {
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 6px 0 4px;
+  }
+  .live-zone-v2 .lzv-svg {
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+    display: block;
+  }
+  .live-zone-v2 .lzv-legend {
+    display: flex; gap: 14px; margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .live-zone-v2 .lzv-legend .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: 0;
+  }
+  .live-zone-v2 .lzv-legend .dot.ball { background: var(--win); }
+  .live-zone-v2 .lzv-legend .dot.strike { background: var(--cubs-red); }
+  .live-zone-v2 .lzv-legend .dot.foul { background: var(--ink-dim); }
+  .live-zone-v2 .lzv-legend .dot.inplay { background: var(--gold); }
+
+  /* Pitch sequence (horizontal cards, newest first) */
+  .pitch-sequence {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 6px 4px 10px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .pitch-sequence::-webkit-scrollbar { height: 4px; }
+  .pitch-sequence::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1); border-radius: 2px;
+  }
+  .pitch-card {
+    flex: 0 0 auto;
+    min-width: 102px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+    display: flex; flex-direction: column;
+    gap: 4px;
+  }
+  .pitch-card .pc-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    color: var(--bg-0);
+    background: var(--ink-faint);
+  }
+  .pitch-card.ball .pc-num { background: var(--win); }
+  .pitch-card.strike .pc-num { background: var(--cubs-red); color: white; }
+  .pitch-card.foul .pc-num { background: var(--ink-dim); color: var(--bg-0); }
+  .pitch-card.in-play .pc-num { background: var(--gold); }
+  .pitch-card .pc-call {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px; letter-spacing: 0.12em;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+  .pitch-card.ball .pc-call { color: var(--win); }
+  .pitch-card.strike .pc-call { color: var(--cubs-red); }
+  .pitch-card.in-play .pc-call { color: var(--gold); }
+  .pitch-card.foul .pc-call { color: var(--ink-dim); }
+  .pitch-card .pc-type {
+    font-size: 9px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .pitch-card .pc-velo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-dim);
+    font-weight: 700;
+    margin-top: 1px;
+  }
+
   @media (max-width: 720px) {
     .topbar { padding: 12px 16px; }
     main { padding: 20px 14px 60px; }
@@ -1371,6 +1672,38 @@
     .nlc-radar { grid-template-columns: 1fr 1fr; gap: 8px; }
     .nlc-game { padding: 9px 10px; font-size: 13px; }
     .nlc-row .abbr { font-size: 11px; }
+
+    /* Live card v2: scoreboard / counts / matchup / zone / pitches */
+    .live-scoreboard { gap: 12px; padding: 4px 4px 10px; }
+    .lsb-logo { width: 48px; height: 48px; }
+    .lsb-score { font-size: clamp(40px, 13vw, 56px); }
+    .lsb-abbr { font-size: 14px; letter-spacing: 0.1em; }
+    .lsb-record { font-size: 10px; }
+    .lsb-mid { gap: 6px; min-width: 0; }
+    .lsb-state { font-size: 14px; letter-spacing: 0.06em; }
+    .lsb-mid .bases { width: 48px; height: 48px; }
+    .lsb-mid .lsb-wp strong { font-size: 14px; }
+
+    .live-counts { gap: 8px; padding: 9px 4px; }
+    .count-block { gap: 6px; }
+    .count-block label { font-size: 9px; letter-spacing: 0.14em; }
+    .count-block .dot { width: 8px; height: 8px; }
+
+    .live-matchup { grid-template-columns: 1fr auto 1fr; gap: 10px; padding: 12px 0 4px; }
+    .lm-photo { width: 48px; height: 48px; border-width: 1.5px; }
+    .lm-name { font-size: 12px; }
+    .lm-name .role { font-size: 10px; margin-left: 2px; }
+    .lm-line { font-size: 10px; }
+    .lm-vs { font-size: 14px; }
+    .live-matchup-extra { gap: 14px; font-size: 11px; }
+
+    .live-zone-v2 .lzv-svg { max-width: 200px; }
+
+    .pitch-card { min-width: 88px; padding: 8px 6px; }
+    .pitch-card .pc-num { width: 22px; height: 22px; font-size: 11px; }
+    .pitch-card .pc-call { font-size: 12px; }
+    .pitch-card .pc-type { font-size: 9px; }
+    .pitch-card .pc-velo { font-size: 10px; }
   }
 
   @media (max-width: 480px) {
@@ -1382,6 +1715,18 @@
     .live-wp strong { font-size: 19px; }
     .stat-cell.with-headshot .headshot { width: 40px; height: 40px; }
     .nlc-radar { grid-template-columns: 1fr; }
+
+    /* Live card v2 — tighter for narrow phones */
+    .live-scoreboard { gap: 8px; }
+    .lsb-logo { width: 40px; height: 40px; }
+    .lsb-score { font-size: 44px; }
+    .lsb-state { font-size: 13px; }
+    .lsb-mid .bases { width: 42px; height: 42px; }
+    .lm-photo { width: 44px; height: 44px; }
+    .lm-vs { font-size: 12px; }
+    .pitch-card { min-width: 78px; }
+    .live-counts { grid-template-columns: 1fr; gap: 6px; padding: 8px 4px; }
+    .count-block { justify-content: flex-start; padding-left: 8px; }
   }
 </style>
 </head>
@@ -1955,6 +2300,279 @@
     }
     return null;
   }
+  // Which boxscore side ('home'/'away') a player belongs to. Used to figure
+  // out whether the current pitcher is the Cubs' or the opponent's, so we can
+  // show the right team mark next to the PITCHER / BATTER label.
+  function findBoxPlayerSide(boxscore, playerId) {
+    if (!playerId || !boxscore?.teams) return null;
+    for (const sideKey of ['home', 'away']) {
+      if (boxscore.teams[sideKey]?.players?.[`ID${playerId}`]) return sideKey;
+    }
+    return null;
+  }
+
+  // MLB cap-style team logo, served as SVG so it stays sharp at any DPR.
+  function teamLogoURL(teamId) {
+    return `https://www.mlbstatic.com/team-logos/${teamId}.svg`;
+  }
+
+  // Bucket a single pitch event into one of {ball, strike, foul, in-play}
+  // and produce a compact label for the pitch-sequence card. Pitch type
+  // descriptions get shortened to scoreboard-style abbreviations.
+  function pitchCallBucket(ev) {
+    const code = ev.details?.code || '';
+    const inPlay = !!ev.details?.isInPlay;
+    const isStrike = !!ev.details?.isStrike;
+    const isBall = !!ev.details?.isBall;
+    const desc = ev.details?.description || '';
+    if (inPlay) return { cls: 'in-play', label: 'IN PLAY' };
+    if (/Foul/i.test(desc)) return { cls: 'foul', label: 'FOUL' };
+    if (isBall) return { cls: 'ball', label: 'BALL' };
+    if (isStrike) {
+      if (/Swinging/i.test(desc)) return { cls: 'strike', label: 'SWINGING' };
+      if (/Called/i.test(desc)) return { cls: 'strike', label: 'CALLED' };
+      return { cls: 'strike', label: 'STRIKE' };
+    }
+    return { cls: '', label: (desc || 'PITCH').toUpperCase() };
+  }
+  const PITCH_TYPE_SHORT = {
+    'Four-Seam Fastball': 'FOUR-SEAM FB',
+    'Two-Seam Fastball': 'TWO-SEAM FB',
+    'Sinker': 'SINKER',
+    'Cutter': 'CUTTER',
+    'Slider': 'SLIDER',
+    'Sweeper': 'SWEEPER',
+    'Curveball': 'CURVEBALL',
+    'Knuckle Curve': 'KNUCKLE CV',
+    'Changeup': 'CHANGEUP',
+    'Splitter': 'SPLITTER',
+    'Slurve': 'SLURVE',
+    'Forkball': 'FORKBALL',
+    'Knuckleball': 'KNUCKLEBALL',
+    'Eephus': 'EEPHUS',
+  };
+  function pitchTypeShort(typeDesc) {
+    if (!typeDesc) return '';
+    return (PITCH_TYPE_SHORT[typeDesc] || typeDesc).toUpperCase();
+  }
+
+  // ESPN-style scoreboard: logo / score / abbr / record on each side, with
+  // the inning state, bases and Cubs WP stacked in the middle.
+  function basesDiamondHTML(onFirst, onSecond, onThird) {
+    return `<div class="bases" aria-label="Bases">
+        <span class="base second ${onSecond ? 'on' : ''}"></span>
+        <span class="base third ${onThird ? 'on' : ''}"></span>
+        <span class="base first ${onFirst ? 'on' : ''}"></span>
+      </div>`;
+  }
+  function renderScoreboard(c, linescore, recordMap, wpDisplay, wpClass) {
+    const inning = linescore.currentInning ?? c.raw.linescore?.currentInning ?? '?';
+    const half = (linescore.inningState || linescore.inningHalf || '').toLowerCase();
+    const halfArrow = half.startsWith('top') ? '▲' : half.startsWith('bot') ? '▼' : '·';
+    const halfLabel = half.startsWith('mid') ? `Mid ${ordinal(inning)}`
+      : half.startsWith('end') ? `End ${ordinal(inning)}`
+      : `<span class="arr">${halfArrow}</span>${ordinal(inning)}`;
+    const outs = linescore.outs ?? 0;
+
+    const cubsScore = c.isHome ? (linescore.teams?.home?.runs ?? c.cubsSide.score ?? 0) : (linescore.teams?.away?.runs ?? c.cubsSide.score ?? 0);
+    const oppScore = c.isHome ? (linescore.teams?.away?.runs ?? c.oppSide.score ?? 0) : (linescore.teams?.home?.runs ?? c.oppSide.score ?? 0);
+
+    const offense = linescore.offense || {};
+    const onFirst = !!offense.first, onSecond = !!offense.second, onThird = !!offense.third;
+
+    const cubsTeam = c.cubsSide.team, oppTeam = c.oppSide.team;
+    const cubsRec = recordMap?.[cubsTeam.id];
+    const oppRec = recordMap?.[oppTeam.id];
+    const cubsAbbr = (cubsTeam.abbreviation || 'CHC').toUpperCase();
+    const oppAbbr = (oppTeam.abbreviation || (oppTeam.teamName || 'OPP').slice(0, 3)).toUpperCase();
+
+    const awayTeam = c.isHome ? oppTeam : cubsTeam;
+    const homeTeam = c.isHome ? cubsTeam : oppTeam;
+    const awayScore = c.isHome ? oppScore : cubsScore;
+    const homeScore = c.isHome ? cubsScore : oppScore;
+    const awayAbbr = c.isHome ? oppAbbr : cubsAbbr;
+    const homeAbbr = c.isHome ? cubsAbbr : oppAbbr;
+    const awayRec = c.isHome ? oppRec : cubsRec;
+    const homeRec = c.isHome ? cubsRec : oppRec;
+    const awayLead = awayScore > homeScore;
+    const homeLead = homeScore > awayScore;
+
+    const teamCell = (team, score, abbr, rec, lead) => `
+      <div class="lsb-team ${lead ? 'lead' : ''}">
+        <div class="lsb-logo"><img src="${teamLogoURL(team.id)}" alt="${team.teamName || team.name || abbr}" loading="lazy" onerror="this.style.display='none'"></div>
+        <div class="lsb-score">${score}</div>
+        <div class="lsb-abbr">${abbr}</div>
+        ${rec ? `<div class="lsb-record">${rec.wins}-${rec.losses}</div>` : ''}
+      </div>`;
+
+    return `
+      <div class="live-scoreboard">
+        ${teamCell(awayTeam, awayScore, awayAbbr, awayRec, awayLead)}
+        <div class="lsb-mid">
+          <div class="lsb-state">${halfLabel}, ${outs} out${outs === 1 ? '' : 's'}</div>
+          ${basesDiamondHTML(onFirst, onSecond, onThird)}
+          ${wpDisplay && wpDisplay !== '—' ? `
+            <div class="lsb-wp ${wpClass}">
+              <span class="lbl">Cubs WP</span>
+              <strong>${wpDisplay}</strong>
+            </div>` : ''}
+        </div>
+        ${teamCell(homeTeam, homeScore, homeAbbr, homeRec, homeLead)}
+      </div>`;
+  }
+
+  // BALLS / STRIKES / OUTS as filled-dot indicators.
+  function renderCountDots(balls, strikes, outs) {
+    const dots = (n, max) => Array.from({ length: max }, (_, i) =>
+      `<span class="dot ${i < n ? 'on' : ''}"></span>`
+    ).join('');
+    return `
+      <div class="live-counts">
+        <div class="count-block balls"><label>Balls</label><div class="dots">${dots(balls, 4)}</div></div>
+        <div class="count-block strikes"><label>Strikes</label><div class="dots">${dots(strikes, 3)}</div></div>
+        <div class="count-block outs"><label>Outs</label><div class="dots">${dots(outs, 3)}</div></div>
+      </div>`;
+  }
+
+  // Pitcher / Batter dual panel with team logos, headshots, and stat lines.
+  function renderMatchup(opts) {
+    const {
+      pitcherName, pitcherId, pitcherTeam, pitcherIsCubs, handStr, pitcherLineHTML,
+      batterName, batterId, batterTeam, batterIsCubs, batterPos, batterLineHTML,
+      pitchCountAB, onDeckName,
+    } = opts;
+    if (!pitcherName && !batterName) return '';
+
+    const sideHTML = (label, teamId, isCubs, photoId, name, role, lineHTML) => `
+      <div class="lm-side ${isCubs ? 'cubs' : 'opp'}">
+        <div class="lm-label">
+          ${teamId ? `<img src="${teamLogoURL(teamId)}" alt="" onerror="this.style.display='none'">` : ''}
+          ${label}
+        </div>
+        ${headshotImg(photoId, { size: 90, cls: 'lm-photo' })}
+        <div class="lm-name">${name || 'TBD'}${role ? ` <span class="role">${role}</span>` : ''}</div>
+        ${lineHTML ? `<div class="lm-line">${lineHTML}</div>` : ''}
+      </div>`;
+
+    const extraBits = [];
+    if (pitchCountAB != null && pitchCountAB > 0) {
+      extraBits.push(`<span><span class="lme-label">Pitch ${pitchCountAB}</span></span>`);
+    }
+    if (onDeckName) {
+      extraBits.push(`<span><span class="lme-label">On Deck</span><strong>${onDeckName}</strong></span>`);
+    }
+    const extraHTML = extraBits.length ? `<div class="live-matchup-extra">${extraBits.join('')}</div>` : '';
+
+    return `
+      <div class="live-matchup">
+        ${sideHTML('Pitcher', pitcherTeam?.id, pitcherIsCubs, pitcherId, pitcherName, handStr, pitcherLineHTML)}
+        <div class="lm-vs">vs</div>
+        ${sideHTML('Batter', batterTeam?.id, batterIsCubs, batterId, batterName, batterPos, batterLineHTML)}
+      </div>
+      ${extraHTML}`;
+  }
+
+  // Bigger strike-zone plot with NUMBERED dots (1, 2, 3 …) so the pitch
+  // sequence cards below tie back to the locations in the zone.
+  function renderZoneV2(currentPlay) {
+    if (!currentPlay) return '';
+    const events = (currentPlay.playEvents || []).filter(e =>
+      e.isPitch && e.pitchData?.coordinates
+        && e.pitchData.coordinates.pX != null
+        && e.pitchData.coordinates.pZ != null
+    );
+    if (!events.length) return '';
+    const last = events[events.length - 1];
+    const top = last.pitchData.strikeZoneTop ?? 3.4;
+    const bot = last.pitchData.strikeZoneBottom ?? 1.6;
+
+    const W = 240, H = 280;
+    const vMin = bot - 1.3, vMax = top + 1.0;
+    const hMin = -1.7, hMax = 1.7;
+    const xAt = px => ((px - hMin) / (hMax - hMin)) * W;
+    const yAt = pz => H - ((pz - vMin) / (vMax - vMin)) * H;
+
+    const szLeft = xAt(-0.708);
+    const szRight = xAt(0.708);
+    const szTop = yAt(top);
+    const szBot = yAt(bot);
+    const w3 = (szRight - szLeft) / 3;
+    const h3 = (szBot - szTop) / 3;
+
+    // Subtle subzone fill for the 3×3 grid inside the strike zone — gives a
+    // visual reference like ESPN's zone heat map without committing to a
+    // full heatmap (which would need a much larger pitch sample).
+    const subzones = [];
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const x = szLeft + col * w3;
+        const y = szTop + row * h3;
+        subzones.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w3.toFixed(1)}" height="${h3.toFixed(1)}" fill="rgba(58,111,255,0.12)" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>`);
+      }
+    }
+
+    const dots = events.slice(-12).map((e, idx, arr) => {
+      const c = e.pitchData.coordinates;
+      const x = xAt(c.pX);
+      const y = yAt(c.pZ);
+      const bucket = pitchCallBucket(e);
+      let fill;
+      if (bucket.cls === 'in-play') fill = 'var(--gold)';
+      else if (bucket.cls === 'foul') fill = 'var(--ink-dim)';
+      else if (bucket.cls === 'strike') fill = 'var(--cubs-red)';
+      else if (bucket.cls === 'ball') fill = 'var(--win)';
+      else fill = 'var(--ink-faint)';
+      const num = idx + 1;
+      const tip = [
+        e.details?.type?.description,
+        e.pitchData?.startSpeed != null ? `${e.pitchData.startSpeed.toFixed(1)} mph` : '',
+        e.details?.description
+      ].filter(Boolean).join(' · ');
+      return `<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})">
+        <circle r="11" fill="${fill}" stroke="white" stroke-width="2"/>
+        <text y="4" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#04081a">${num}</text>
+        <title>${tip}</title>
+      </g>`;
+    }).join('');
+
+    return `
+      <div class="live-zone-v2">
+        <svg viewBox="0 0 ${W} ${H}" class="lzv-svg" aria-label="Pitch locations for current at-bat">
+          ${subzones.join('')}
+          <rect x="${szLeft.toFixed(1)}" y="${szTop.toFixed(1)}" width="${(szRight - szLeft).toFixed(1)}" height="${(szBot - szTop).toFixed(1)}" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+          ${dots}
+        </svg>
+        <div class="lzv-legend">
+          <span><span class="dot ball"></span>Ball</span>
+          <span><span class="dot strike"></span>Strike</span>
+          <span><span class="dot foul"></span>Foul</span>
+          <span><span class="dot inplay"></span>In play</span>
+        </div>
+      </div>`;
+  }
+
+  // Horizontal pitch-sequence cards, newest first. Each card mirrors the
+  // numbered dot's color in the zone plot above it.
+  function renderPitchSequence(currentPlay) {
+    if (!currentPlay) return '';
+    const events = (currentPlay.playEvents || []).filter(e => e.isPitch);
+    if (!events.length) return '';
+    const cards = events.map((e, idx) => {
+      const num = idx + 1;
+      const bucket = pitchCallBucket(e);
+      const typeShort = pitchTypeShort(e.details?.type?.description);
+      const velo = e.pitchData?.startSpeed;
+      return `
+        <div class="pitch-card ${bucket.cls}">
+          <div class="pc-num">${num}</div>
+          <div class="pc-call">${bucket.label}</div>
+          ${typeShort ? `<div class="pc-type">${typeShort}</div>` : ''}
+          ${velo != null ? `<div class="pc-velo">${velo.toFixed(0)} MPH</div>` : ''}
+        </div>`;
+    });
+    // Newest pitch first, like ESPN.
+    return `<div class="pitch-sequence">${cards.reverse().join('')}</div>`;
+  }
 
   // Pitcher's today line: 2.1 IP · 3H · 1R · 4K · 1BB · 42P
   function pitcherTodayLine(stats) {
@@ -2317,23 +2935,17 @@
       </div>`;
   }
 
-  function renderLiveGameCard(c, feed, wp, clips = []) {
+  function renderLiveGameCard(c, feed, wp, clips = [], recordMap = null) {
     const linescore = feed?.liveData?.linescore || {};
     const offense = linescore.offense || {};
     const defense = linescore.defense || {};
     const inning = linescore.currentInning || c.raw.linescore?.currentInning || '?';
     const half = (linescore.inningState || linescore.inningHalf || '').toLowerCase();
-    const halfArrow = half.startsWith('top') ? '▲' : half.startsWith('bot') ? '▼' : (half.startsWith('mid') ? '·' : '·');
+    const halfArrow = half.startsWith('top') ? '▲' : half.startsWith('bot') ? '▼' : '·';
     const halfLabel = half.startsWith('mid') ? `Mid ${ordinal(inning)}` : half.startsWith('end') ? `End ${ordinal(inning)}` : `${halfArrow} ${ordinal(inning)}`;
     const balls = linescore.balls ?? 0;
     const strikes = linescore.strikes ?? 0;
     const outs = linescore.outs ?? 0;
-    const cubsScore = c.isHome ? (linescore.teams?.home?.runs ?? c.cubsSide.score ?? 0) : (linescore.teams?.away?.runs ?? c.cubsSide.score ?? 0);
-    const oppScore = c.isHome ? (linescore.teams?.away?.runs ?? c.oppSide.score ?? 0) : (linescore.teams?.home?.runs ?? c.oppSide.score ?? 0);
-    const cubsLead = cubsScore > oppScore;
-    const oppLead = oppScore > cubsScore;
-    const oppName = c.oppSide.team.teamName || c.oppSide.team.name;
-    const onFirst = !!offense.first, onSecond = !!offense.second, onThird = !!offense.third;
 
     // Cubs WP: winProbability returns a list, last entry has the current %.
     let cubsWPnum = null;
@@ -2353,11 +2965,7 @@
       if (allPlays[i].result?.description) { lastPlay = allPlays[i].result.description; break; }
     }
 
-    // At-bat / pitcher names. Offense.batter / defense.pitcher are usually present mid-AB.
-    const batter = offense.batter?.fullName;
-    const pitcher = defense.pitcher?.fullName;
-
-    // Box-score-driven stat lines.
+    // At-bat / pitcher data. Offense.batter / defense.pitcher are usually present mid-AB.
     const boxscore = feed?.liveData?.boxscore || {};
     const pitcherBox = findBoxPlayer(boxscore, defense.pitcher?.id);
     const batterBox = findBoxPlayer(boxscore, offense.batter?.id);
@@ -2367,36 +2975,21 @@
     const pitcherLineHTML = pitcherTodayLine(pitcherStat);
     const batterLineHTML = batterLine(batterToday, batterSeason);
 
-    // Last pitch detail.
-    const pitch = lastPitchSummary(currentPlay);
-    const lastPitchHTML = pitch ? `
-      <div class="live-pitch">
-        <small>Last pitch</small>
-        ${pitch.velo ? `<span class="velo">${pitch.velo.toFixed(1)} mph</span><span class="sep">·</span>` : ''}
-        ${pitch.type ? `<span class="ptype">${pitch.type}</span><span class="sep">·</span>` : ''}
-        ${pitch.call ? `<span class="pres">${pitch.call}</span>` : ''}
-      </div>` : '';
+    // Determine whether the active pitcher / batter is on the Cubs side, so
+    // we can show the right cap mark by their label.
+    const pitcherSide = findBoxPlayerSide(boxscore, defense.pitcher?.id);
+    const batterSide = findBoxPlayerSide(boxscore, offense.batter?.id);
+    const cubsBoxSide = c.isHome ? 'home' : 'away';
+    const pitcherIsCubs = pitcherSide === cubsBoxSide;
+    const batterIsCubs = batterSide === cubsBoxSide;
+    const pitcherTeam = pitcherIsCubs ? c.cubsSide.team : c.oppSide.team;
+    const batterTeam = batterIsCubs ? c.cubsSide.team : c.oppSide.team;
 
-    // WP sparkline, strike-zone plot, Statcast on the latest batted ball.
-    const wpSparkHTML = wpSparklineHTML(wp, c.isHome);
-    const zoneHTML = pitchZoneHTML(currentPlay);
-    const sc_HTML = statcastHTML(allPlays);
-    // When we have a strike-zone plot, lay zone | (pitch + statcast) side-by-side.
-    // Otherwise stack the pitch + statcast pills full-width.
-    const zoneRowHTML = zoneHTML
-      ? `<div class="live-zone-row">${zoneHTML}<div class="zone-meta">${lastPitchHTML}${sc_HTML}</div></div>`
-      : `${lastPitchHTML}${sc_HTML}`;
-
-    // On-deck → in-the-hole.
+    const pitchHand = pitcherBox?.person?.pitchHand?.code || feed?.gameData?.players?.[`ID${defense.pitcher?.id}`]?.pitchHand?.code;
+    const handStr = pitchHand === 'R' ? 'RHP' : pitchHand === 'L' ? 'LHP' : '';
+    const batterPos = batterBox?.position?.abbreviation || '';
+    const pitchCountAB = (currentPlay?.playEvents || []).filter(e => e.isPitch).length;
     const onDeckName = offense.onDeck?.fullName;
-    const inHoleName = offense.inHole?.fullName;
-    const upcomingHTML = (onDeckName || inHoleName) ? `
-      <div class="live-ondeck">
-        <small>Coming up</small>
-        ${onDeckName ? `<strong>${onDeckName}</strong>` : ''}
-        ${onDeckName && inHoleName ? `<span class="arrow">→</span>` : ''}
-        ${inHoleName ? `<strong>${inHoleName}</strong>` : ''}
-      </div>` : '';
 
     // Weather + attendance. Wind direction matters at Wrigley — color it: out
     // (toward bleachers) helps hitters, in (toward plate) helps pitchers.
@@ -2419,61 +3012,41 @@
     if (attendance) metaBits.push(`<span class="item"><small>Attendance</small>${attendance.toLocaleString()}</span>`);
     const metaHTML = metaBits.length ? `<div class="live-meta">${metaBits.join('')}</div>` : '';
 
+    // Linescore strip labels (CUBS / opp 4-letter abbr).
     const cubsLabel = 'CUBS';
+    const oppName = c.oppSide.team.teamName || c.oppSide.team.name;
     const oppLabel = (c.oppSide.team.abbreviation || oppName).toUpperCase().slice(0, 4);
     const awayLabel = c.isHome ? oppLabel : cubsLabel;
     const homeLabel = c.isHome ? cubsLabel : oppLabel;
 
+    const scoreboardHTML = renderScoreboard(c, linescore, recordMap, wpDisplay, wpClass);
+    const countsHTML = renderCountDots(balls, strikes, outs);
+    const matchupHTML = renderMatchup({
+      pitcherName: defense.pitcher?.fullName,
+      pitcherId: defense.pitcher?.id,
+      pitcherTeam, pitcherIsCubs, handStr, pitcherLineHTML,
+      batterName: offense.batter?.fullName,
+      batterId: offense.batter?.id,
+      batterTeam, batterIsCubs, batterPos, batterLineHTML,
+      pitchCountAB, onDeckName,
+    });
+    const zoneV2HTML = renderZoneV2(currentPlay);
+    const pitchSeqHTML = renderPitchSequence(currentPlay);
+    const wpSparkHTML = wpSparklineHTML(wp, c.isHome);
+    const sc_HTML = statcastHTML(allPlays);
+
     return `
       <div class="next-game-card live-now">
         <div class="next-game-label" style="color: var(--cubs-red);">● LIVE · ${halfLabel}</div>
-        <div class="live-row">
-          <div class="live-score">
-            <span class="lbl">${cubsLabel}</span>
-            <span class="num ${cubsLead ? 'lead' : ''}">${cubsScore}</span>
-            <span class="dash">—</span>
-            <span class="num ${oppLead ? 'lead' : ''}">${oppScore}</span>
-            <span class="lbl">${oppLabel}</span>
-          </div>
-          <div class="bases" aria-label="Bases">
-            <span class="base second ${onSecond ? 'on' : ''}"></span>
-            <span class="base third ${onThird ? 'on' : ''}"></span>
-            <span class="base first ${onFirst ? 'on' : ''}"></span>
-          </div>
-          <div class="live-count">
-            <div class="bs">${balls}-${strikes}</div>
-            <span class="out">${outs} out${outs === 1 ? '' : 's'}</span>
-          </div>
-          <div class="live-wp ${wpClass}">
-            <small>Cubs WP</small>
-            <strong>${wpDisplay}</strong>
-          </div>
-        </div>
+        ${scoreboardHTML}
+        ${countsHTML}
+        ${matchupHTML}
+        ${zoneV2HTML}
+        ${pitchSeqHTML}
+        ${sc_HTML}
+        ${lastPlay ? `<div class="live-last">${lastPlay}</div>` : ''}
         ${renderLineScoreStrip(linescore, awayLabel, homeLabel)}
         ${wpSparkHTML}
-        <div class="live-stats-row">
-          ${batter ? `
-            <div class="stat-cell with-headshot">
-              ${headshotImg(offense.batter?.id, { size: 90, cls: `headshot ${c.isHome ? 'cubs' : 'opp'}` })}
-              <div class="stat-cell-body">
-                <small>At bat</small>
-                <div class="name">${batter}</div>
-                ${batterLineHTML ? `<div class="line">${batterLineHTML}</div>` : ''}
-              </div>
-            </div>` : '<div></div>'}
-          ${pitcher ? `
-            <div class="stat-cell with-headshot">
-              ${headshotImg(defense.pitcher?.id, { size: 90, cls: `headshot ${c.isHome ? 'opp' : 'cubs'}` })}
-              <div class="stat-cell-body">
-                <small>Pitching</small>
-                <div class="name">${pitcher}</div>
-                ${pitcherLineHTML ? `<div class="line">${pitcherLineHTML}</div>` : ''}
-              </div>
-            </div>` : '<div></div>'}
-        </div>
-        ${zoneRowHTML}
-        ${lastPlay ? `<div class="live-last">${lastPlay}</div>` : ''}
-        ${upcomingHTML}
         ${renderLiveClipsStrip(clips)}
         ${metaHTML}
       </div>`;
@@ -2486,7 +3059,7 @@
     const c = nextClassified;
 
     if (c.isLive) {
-      $('next-game-content').innerHTML = renderLiveGameCard(c, feed, wp, clips);
+      $('next-game-content').innerHTML = renderLiveGameCard(c, feed, wp, clips, recordMap);
       if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
       return;
     }
