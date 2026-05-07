@@ -1811,7 +1811,7 @@
     </section>
 
     <section class="section" id="next-game-section" style="display:none;">
-      <h2>Next Up</h2>
+      <h2 id="next-game-title">Next Up</h2>
       <div id="next-game-content"></div>
     </section>
 
@@ -3093,6 +3093,11 @@
     if (!nextClassified) { sec.style.display = 'none'; return; }
     sec.style.display = 'block';
     const c = nextClassified;
+
+    // Section header swaps to a live label while the game is underway —
+    // "Next Up" only makes sense before first pitch.
+    const title = $('next-game-title');
+    if (title) title.textContent = c.isLive ? 'Game In Progress' : 'Next Up';
 
     if (c.isLive) {
       $('next-game-content').innerHTML = renderLiveGameCard(c, feed, wp, clips, recordMap);
