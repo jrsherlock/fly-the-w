@@ -1901,11 +1901,92 @@
   // ---------- API ----------
   // Fetch both AL and NL standings — Cubs play interleague opponents too, and
   // we need every team's record for the upcoming-opponent badges.
+  // Standings: we explicitly ask MLB for yesterday's snapshot. That value is
+  // stable — yesterday's games are over, the math can't change. We then
+  // overlay today's actual final results in `applyTodayDeltas` so the magic
+  // number reflects wins that finished today even if MLB's standings
+  // endpoint hasn't refreshed yet (lag is real — 5-30min after game end).
   async function fetchStandings() {
-    const url = `https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=${SEASON}&standingsTypes=regularSeason`;
+    const yest = new Date(Date.now() - 86400000);
+    const dateStr = isoDate(yest);
+    const url = `https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=${SEASON}&standingsTypes=regularSeason&date=${dateStr}`;
     const r = await fetch(url);
     if (!r.ok) throw new Error('standings ' + r.status);
     return r.json();
+  }
+
+  // Walk today's NL Central games and produce per-team W/L deltas. Finals
+  // count toward actual record; in-progress games are tracked separately as
+  // "live potential" so we can surface a projection without polluting the
+  // canonical magic number.
+  function computeTodayDeltas(nlcGames) {
+    const out = {};
+    const ensure = id => { out[id] ||= { w: 0, l: 0, lw: 0, ll: 0 }; };
+    for (const g of nlcGames || []) {
+      const code = g.status?.codedGameState || '';
+      const isFinal = ['F', 'O'].includes(code) || /Final|Game Over|Completed Early/.test(g.status?.detailedState || '');
+      const isLive = ['I', 'M', 'P'].includes(code) && !isFinal;
+      const home = g.teams?.home, away = g.teams?.away;
+      if (!home || !away || home.score == null || away.score == null) continue;
+      if (isFinal) {
+        const winner = home.score > away.score ? home.team.id : away.team.id;
+        const loser  = home.score > away.score ? away.team.id : home.team.id;
+        ensure(winner); ensure(loser);
+        out[winner].w++;
+        out[loser].l++;
+      } else if (isLive && home.score !== away.score) {
+        const leader = home.score > away.score ? home.team.id : away.team.id;
+        const trailer = home.score > away.score ? away.team.id : home.team.id;
+        ensure(leader); ensure(trailer);
+        out[leader].lw++;
+        out[trailer].ll++;
+      }
+    }
+    return out;
+  }
+
+  // Apply today's deltas onto a baseline standings response. `includeLive`
+  // also folds in the projected outcomes of in-progress games — useful for
+  // showing "if today holds" math, but never used for the canonical number.
+  function applyTodayDeltas(standings, deltas, includeLive = false) {
+    if (!standings?.records) return standings;
+    const records = standings.records.map(div => ({
+      ...div,
+      teamRecords: div.teamRecords.map(t => {
+        const d = deltas[t.team.id];
+        if (!d) return t;
+        const wDelta = d.w + (includeLive ? d.lw : 0);
+        const lDelta = d.l + (includeLive ? d.ll : 0);
+        if (!wDelta && !lDelta) return t;
+        const wins = t.wins + wDelta;
+        const losses = t.losses + lDelta;
+        return {
+          ...t,
+          wins,
+          losses,
+          winningPercentage: (wins / Math.max(1, wins + losses)).toFixed(3)
+        };
+      })
+    }));
+    // Recompute games-back per division so the standings table stays
+    // internally consistent after the overlay.
+    records.forEach(div => {
+      const sorted = [...div.teamRecords].sort((a, b) =>
+        (b.wins / Math.max(1, b.wins + b.losses)) - (a.wins / Math.max(1, a.wins + a.losses))
+        || b.wins - a.wins
+        || a.losses - b.losses
+      );
+      const leader = sorted[0];
+      div.teamRecords.forEach(t => {
+        if (t.team.id === leader.team.id) {
+          t.gamesBack = '-';
+        } else {
+          const gb = ((leader.wins - t.wins) + (t.losses - leader.losses)) / 2;
+          t.gamesBack = gb % 1 === 0 ? String(gb) : gb.toFixed(1);
+        }
+      });
+    });
+    return { ...standings, records };
   }
   function buildTeamRecordMap(standings) {
     const map = {};
@@ -2099,8 +2180,15 @@
             All tied at ${bindingChasers[0].losses} losses — every one of their losses counts toward the magic number.
           </span>`
         : '';
+      const projNote = (state.liveProjectedDelta > 0)
+        ? `<span style="display:block;margin-top:8px;color:var(--gold);font-size:0.92em;">
+            ⚡ If today's live games hold, magic number drops to
+            <strong>${state.liveProjectedMagic}</strong>
+            (–${state.liveProjectedDelta}).
+          </span>`
+        : '';
       contextHtml = `Any combination of <strong>Cubs wins</strong> and <strong>${chaserPhrase} ${lossWord}</strong> totaling
-        <strong>${magicToClinch}</strong> clinches the NL Central.${tieNote}`;
+        <strong>${magicToClinch}</strong> clinches the NL Central.${tieNote}${projNote}`;
     } else {
       // Cubs trailing — show "games to overtake the leader" (chase number) as the headline
       const chase = Math.max(0, leader.wins - cubs.wins) + 1;
@@ -3253,11 +3341,19 @@
       const start = new Date(); start.setDate(start.getDate() - 21);
       const end = new Date(); end.setDate(end.getDate() + 14);
 
-      const [standings, schedule, nlcToday] = await Promise.all([
+      const [standingsBaseline, schedule, nlcToday] = await Promise.all([
         fetchStandings(),
         fetchSchedule(isoDate(start), isoDate(end)),
         fetchNLCentralToday().catch(() => null)
       ]);
+
+      // Overlay today's actual final results onto yesterday's stable
+      // baseline. This makes the magic number bulletproof against MLB's
+      // standings-refresh lag — if the Cubs (or any chaser) finished a game
+      // today, that result is already counted.
+      const todayNLCGames = nlcToday ? dedupeNLCGames(nlcToday) : [];
+      const todayDeltas = computeTodayDeltas(todayNLCGames);
+      const standings = applyTodayDeltas(standingsBaseline, todayDeltas, false);
 
       // Standings: NL Central (for magic-number math) + flat record map (for opponent badges)
       const nlCentral = standings.records.find(r => r.division.id === NL_CENTRAL_DIV_ID);
@@ -3265,6 +3361,15 @@
       const recordMap = buildTeamRecordMap(standings);
 
       const state = computeMagic(nlCentral.teamRecords);
+
+      // Live projection: also fold in current in-progress game results so we
+      // can show "if today's live games hold, magic drops to X". Compared to
+      // `state`, this only differs when there's a live game with a leader.
+      const liveStandings = applyTodayDeltas(standingsBaseline, todayDeltas, true);
+      const liveNL = liveStandings.records.find(r => r.division.id === NL_CENTRAL_DIV_ID);
+      const liveState = liveNL ? computeMagic(liveNL.teamRecords) : null;
+      state.liveProjectedMagic = liveState?.magicToClinch ?? null;
+      state.liveProjectedDelta = liveState ? state.magicToClinch - liveState.magicToClinch : 0;
 
       // Games
       const allGames = [];
@@ -3295,10 +3400,9 @@
         currentLiveGame = null;
       }
 
-      // Today's NL Central slate (other four teams). Polling speeds up if
-      // anyone in the division is playing, since chaser scores swing the
-      // magic number.
-      const nlcGames = nlcToday ? dedupeNLCGames(nlcToday) : [];
+      // NL Central live radar — reuse the today-NLC games we already pulled
+      // and deduped above for the standings overlay.
+      const nlcGames = todayNLCGames;
       const anyChaserLive = nlcGames.some(g =>
         g.teams.home.team.id !== TEAM_ID
         && g.teams.away.team.id !== TEAM_ID
