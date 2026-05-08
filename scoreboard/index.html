@@ -310,15 +310,28 @@
   }
   .hero-meta-line {
     font-family: var(--font-mono);
-    font-size: clamp(12px, 1.4vw, 14px);
-    color: var(--paint-dim);
-    letter-spacing: 0.04em;
-    margin: 0 0 20px;
-    line-height: 1.5;
+    font-size: clamp(17px, 2vw, 22px);
+    color: var(--paint);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin: 4px 0 22px;
+    line-height: 1.4;
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.30);
   }
-  .hero-meta-line .sep { color: var(--paint-faint); margin: 0 10px; }
-  .hero-meta-line .pos { color: var(--paint); font-weight: 500; }
-  .hero-meta-line .neg { color: var(--paint-dim); font-weight: 500; }
+  .hero-meta-line .sep {
+    color: var(--paint-faint);
+    margin: 0 0.7em;
+    font-weight: 400;
+    text-shadow: none;
+  }
+  .hero-meta-line .pos {
+    color: var(--gold);
+    font-weight: 600;
+  }
+  .hero-meta-line .neg {
+    color: var(--paint-dim);
+    font-weight: 500;
+  }
   .hero-sublabel {
     font-family: var(--font-body);
     font-size: clamp(14px, 1.5vw, 16px);
