@@ -1359,8 +1359,8 @@
     const ensure = id => { out[id] ||= { w: 0, l: 0, lw: 0, ll: 0 }; };
     for (const g of nlcGames || []) {
       const code = g.status?.codedGameState || '';
-      const isFinal = ['F', 'O'].includes(code) || /Final|Game Over|Completed Early/.test(g.status?.detailedState || '');
-      const isLive = ['I', 'M', 'P'].includes(code) && !isFinal;
+      const isFinal = isCodeFinal(code) || /Final|Game Over|Completed Early/.test(g.status?.detailedState || '');
+      const isLive = isCodeLive(code) && !isFinal;
       const home = g.teams?.home, away = g.teams?.away;
       if (!home || !away || home.score == null || away.score == null) continue;
       if (isFinal) {
@@ -1789,8 +1789,8 @@
     const oppSide = isHome ? g.teams.away : g.teams.home;
     const status = g.status.detailedState;
     const codedState = g.status.codedGameState;
-    const isFinal = ['F', 'O'].includes(codedState) || /Final|Game Over|Completed Early/.test(status);
-    const isLive = ['I', 'M', 'P'].includes(codedState) && !isFinal;
+    const isFinal = isCodeFinal(codedState) || /Final|Game Over|Completed Early/.test(status);
+    const isLive = isCodeLive(codedState) && !isFinal;
     let result = null;
     if (isFinal && cubsSide.score != null && oppSide.score != null) {
       result = cubsSide.score > oppSide.score ? 'W' : (cubsSide.score < oppSide.score ? 'L' : 'T');
@@ -2033,8 +2033,24 @@
     });
     return games;
   }
-  function isCodeLive(code) { return ['I', 'M', 'P'].includes(code); }
-  function isCodeFinal(code) { return ['F', 'O'].includes(code); }
+  // MLB Stats API codedGameState prefixes:
+  //   'S'  = Scheduled       (not live)
+  //   'P*' = Pre-Game        (warmup, lineup posted, NOT live — first pitch hasn't happened)
+  //   'I*' = In Progress     (LIVE; sub-states: IR review, IH hold/delay, IO other)
+  //   'M*' = Manager Challenge or mid-game suspension (LIVE)
+  //   'F*' = Final
+  //   'O*' = Game Over
+  //   'D*' = Postponed/Delayed
+  //   'C*' = Cancelled
+  // Use prefix match so sub-states (IR, IH, MA, FR, etc.) classify correctly.
+  function isCodeLive(code) {
+    if (!code) return false;
+    return code[0] === 'I' || code[0] === 'M';
+  }
+  function isCodeFinal(code) {
+    if (!code) return false;
+    return code[0] === 'F' || code[0] === 'O';
+  }
   function sortNLCGames(games) {
     const order = (g) => {
       const c = g.status?.codedGameState || '';
