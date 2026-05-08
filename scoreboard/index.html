@@ -1,0 +1,2585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cubs Magic Number · Fly the W</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
+<meta name="theme-color" content="#0E3386">
+<meta property="og:title" content="Cubs Magic Number · Fly the W">
+<meta property="og:description" content="Live magic-number tracker for the Chicago Cubs. For fans who don't want to wait until September.">
+<meta property="og:image" content="cubs-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bowlby+One&family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- PostHog analytics -->
+<script>
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loaded".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  posthog.init('phc_SxjtWKsCWcUBqsUmv3bCosTwha1DZLE12Id80J9MiKP', {
+    api_host: 'https://us.i.posthog.com',
+    person_profiles: 'identified_only',
+    disable_session_recording: true,
+    capture_pageview: true,
+    capture_pageleave: true,
+  });
+</script>
+<style>
+  :root {
+    /* === FIELD === the scoreboard's painted iron */
+    --field:        oklch(0.30 0.07 145);
+    --field-deep:   oklch(0.22 0.07 145);
+    --field-shade:  oklch(0.36 0.06 145);
+    --field-light:  oklch(0.42 0.06 145);
+
+    /* === TILE === weathered cream cards that slot into the iron */
+    --card:         oklch(0.93 0.025 75);
+    --card-shade:   oklch(0.86 0.03 75);
+    --ink:          oklch(0.18 0.04 260);
+    --ink-faint:    oklch(0.42 0.04 260);
+
+    /* === PAINT === hand-lettered text on the green iron */
+    --paint:        oklch(0.95 0.02 80);
+    --paint-dim:    oklch(0.82 0.03 80);
+    --paint-faint:  oklch(0.72 0.05 80);
+
+    /* === ACCENTS === */
+    --gold:         oklch(0.62 0.10 70);
+    --gold-soft:    oklch(0.50 0.07 70);
+
+    /* === SEMANTIC === */
+    --w-red:        oklch(0.55 0.20 25);
+    --flag-red:     oklch(0.50 0.16 25);
+    --win:          var(--card);
+    --loss:         var(--paint-faint);
+
+
+
+    /* === TYPE === */
+    --font-display: 'Bowlby One', 'Impact', 'Arial Black', sans-serif;
+    --font-label:   'Anton', 'Impact', sans-serif;
+    --font-body:    'Public Sans', system-ui, -apple-system, sans-serif;
+    --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
+
+    /* === MOTION === */
+    --ease:           cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-emphasis:  cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* === TILE SHADOW === single source of truth for cream-on-iron lift */
+    --tile-shadow:
+      inset 0 -3px 0 var(--card-shade),
+      inset 0 1px 0 oklch(1 0 0 / 0.4),
+      0 3px 0 var(--field-deep),
+      0 6px 14px oklch(0 0 0 / 0.30);
+    --tile-shadow-small:
+      inset 0 -2px 0 var(--card-shade),
+      0 2px 0 var(--field-deep);
+  }
+  *,*::before,*::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    color: var(--paint);
+    background: var(--field);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+
+  /* Top bar — green iron strip with painted brand mark */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--field-deep);
+    border-bottom: 1px solid var(--field-light);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .c-logo {
+    width: 40px; height: 40px;
+    display: block;
+    flex-shrink: 0;
+  }
+  .brand-text {
+    font-family: var(--font-label);
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    color: var(--paint);
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.30);
+  }
+  .brand-text small { font-family: var(--font-mono); display: block; color: var(--paint-dim); font-weight: 500; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; margin-top: 4px; text-shadow: none; }
+
+  .status {
+    display: flex; align-items: center; gap: 14px;
+    font-family: var(--font-mono);
+    font-size: 12px; color: var(--paint-dim);
+    letter-spacing: 0.04em;
+  }
+  @keyframes live-pulse {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .live-dot,
+    .live-pill .live-dot,
+    .refresh-btn.spinning,
+    .w-flag.flying,
+    .tile.flip {
+      animation: none !important;
+    }
+    .live-dot { opacity: 1; }
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+    }
+  }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--flag-red);
+    font-family: var(--font-label);
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.25);
+  }
+  .live-pill .live-dot {
+    display: inline-block;
+    width: 10px; height: 14px;
+    border-radius: 0;
+    background: var(--flag-red);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 70%);
+    box-shadow: 0 1px 0 oklch(0 0 0 / 0.3);
+    animation: live-pulse 1.8s ease-in-out infinite;
+  }
+  .refresh-btn {
+    background: var(--field-light);
+    border: 1px solid var(--field-light);
+    color: var(--paint);
+    width: 32px; height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .refresh-btn:hover { background: var(--field-shade); }
+  .refresh-btn.spinning { animation: spin 1s linear infinite; }
+  .lab-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--field-light);
+    border: 1px solid var(--field-light);
+    color: var(--paint);
+    font-family: var(--font-label);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.30);
+    transition: background 0.2s;
+  }
+  .lab-link:hover {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    color: var(--ink);
+    text-shadow: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Layout */
+  main {
+    position: relative; z-index: 2;
+    max-width: 1280px; margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* === Tile cards === weathered cream tiles slotted into the green iron */
+  .tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    padding: 0.06em 0.18em 0.10em;
+    border-radius: 4px;
+    box-shadow: var(--tile-shadow);
+    position: relative;
+  }
+  .tile + .tile { margin-left: 0.08em; }
+  .tile.lead { box-shadow: 0 0 0 2px var(--gold), var(--tile-shadow); }
+  @media (prefers-reduced-motion: no-preference) {
+    .tile.flip { animation: tile-flip 380ms cubic-bezier(0.22, 1, 0.36, 1); }
+    /* First-load reveal: each tile drops into its slot from above, staggered. */
+    .tile.arrive {
+      animation: tile-arrive 560ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+      animation-delay: calc(var(--tile-i, 0) * 140ms);
+      transform-origin: center top;
+    }
+  }
+  @keyframes tile-flip {
+    0%   { transform: rotateX(0); }
+    50%  { transform: rotateX(-90deg); }
+    51%  { transform: rotateX(90deg); }
+    100% { transform: rotateX(0); }
+  }
+  @keyframes tile-arrive {
+    0% {
+      transform: translateY(-130%) rotateX(70deg);
+      opacity: 0;
+      box-shadow: var(--tile-shadow), 0 0 0 transparent;
+    }
+    60% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(0) rotateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* === Painted labels === hand-stenciled white text on the green iron */
+  .painted {
+    font-family: var(--font-label);
+    color: var(--paint);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 400;
+    line-height: 1.15;
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.25);
+  }
+  .painted.dim   { color: var(--paint-dim); }
+  .painted.faint { color: var(--paint-faint); }
+  .painted.gold  { color: var(--gold); letter-spacing: 0.12em; }
+
+  /* === Hero === a row of tile-card digits sitting on the iron */
+  .hero {
+    text-align: center;
+    padding: 56px 0 40px;
+    position: relative;
+  }
+  @media (min-width: 768px) {
+    .hero {
+      text-align: left;
+      padding: 88px 0 64px;
+    }
+  }
+  .hero-label {
+    font-family: var(--font-label);
+    font-size: clamp(13px, 1.4vw, 16px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--paint);
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.25);
+    margin: 0 0 24px;
+    font-weight: 400;
+  }
+  .hero-number {
+    font-family: var(--font-display);
+    font-size: clamp(120px, 22vw, 240px);
+    line-height: 1;
+    margin: 0 0 32px;
+    color: var(--paint);
+    font-weight: 400;
+    letter-spacing: -0.04em;
+    position: relative;
+    display: inline-flex;
+    gap: 0.06em;
+  }
+  .hero-number .tile {
+    font-size: 1em;
+    padding: 0.08em 0.18em 0.12em;
+  }
+  @media (min-width: 768px) {
+    .hero-number { display: inline-flex; }
+  }
+  .hero-meta-line {
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 1.4vw, 14px);
+    color: var(--paint-dim);
+    letter-spacing: 0.04em;
+    margin: 0 0 20px;
+    line-height: 1.5;
+  }
+  .hero-meta-line .sep { color: var(--paint-faint); margin: 0 10px; }
+  .hero-meta-line .pos { color: var(--paint); font-weight: 500; }
+  .hero-meta-line .neg { color: var(--paint-dim); font-weight: 500; }
+  .hero-sublabel {
+    font-family: var(--font-body);
+    font-size: clamp(14px, 1.5vw, 16px);
+    color: var(--paint-dim);
+    font-weight: 400;
+    letter-spacing: 0;
+    max-width: 60ch;
+    margin: 0 auto;
+    line-height: 1.55;
+  }
+  @media (min-width: 768px) {
+    .hero-sublabel { margin: 0; }
+  }
+  .hero-sublabel strong { color: var(--paint); font-weight: 600; }
+
+  /* Glossary affordance — hairline underline + native tooltip */
+  .gloss {
+    border-bottom: 1px dashed currentColor;
+    cursor: help;
+    text-decoration: none;
+  }
+  .gloss:hover,
+  .gloss:focus-visible {
+    border-bottom-style: solid;
+    outline: none;
+  }
+
+  /* Section heads — painted on the green iron, mixed-case display */
+  .section { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--field-light); }
+  .section h2 {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2.6vw, 30px);
+    letter-spacing: -0.01em;
+    color: var(--paint);
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.28);
+    margin: 0 0 24px;
+    display: flex; align-items: baseline; gap: 14px;
+    font-weight: 400;
+    line-height: 1.1;
+  }
+  .section h2 .count {
+    font-family: var(--font-mono);
+    font-size: 11px; color: var(--paint-faint);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-left: auto; font-weight: 500;
+  }
+
+  /* Next game card — flat painted strip on the iron, no stripe */
+  .next-game-card {
+    background: var(--field-shade);
+    border: none;
+    border-radius: 0;
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .next-game-info { position: relative; }
+  .next-game-label {
+    font-family: var(--font-label);
+    font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--paint); font-weight: 400; margin-bottom: 10px;
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.30);
+  }
+  .next-game-matchup {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2.8vw, 32px);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    font-weight: 400;
+    color: var(--paint);
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.30);
+  }
+  .next-game-matchup .vs { color: var(--paint-faint); margin: 0 10px; font-weight: 400; }
+  .next-game-when {
+    font-family: var(--font-mono);
+    color: var(--paint-dim); font-size: 13px; margin-top: 8px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .next-game-countdown {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 400;
+    color: var(--ink);
+    background: var(--card);
+    padding: 8px 14px 10px;
+    border-radius: 4px;
+    box-shadow: var(--tile-shadow-small);
+    text-align: center;
+    line-height: 1;
+    position: relative;
+  }
+  .next-game-countdown small {
+    display: block;
+    font-family: var(--font-label);
+    font-size: 9px; color: var(--ink-faint);
+    letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 400; margin-bottom: 4px;
+  }
+
+  /* Live game card */
+  .next-game-card.live-now {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    background: var(--field-shade);
+  }
+  .live-last {
+    grid-column: 1 / -1;
+    padding: 8px 0 0;
+    font-family: var(--font-body);
+    font-style: italic;
+    color: var(--paint-dim);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Linescore — collapsible disclosure with painted summary */
+  .live-linescore-wrap {
+    width: 100%;
+    border-top: 1px solid var(--field-light);
+    padding-top: 8px;
+  }
+  .live-linescore-summary {
+    display: list-item;
+    list-style: none;
+    cursor: pointer;
+    font-family: var(--font-label);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--paint-dim);
+    padding: 4px 0;
+    user-select: none;
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.20);
+  }
+  .live-linescore-summary::-webkit-details-marker { display: none; }
+  .live-linescore-summary::after {
+    content: ' \25be';
+    margin-left: 8px;
+    transition: transform 0.2s var(--ease);
+    display: inline-block;
+  }
+  .live-linescore-wrap[open] .live-linescore-summary::after {
+    transform: rotate(180deg);
+  }
+  .live-linescore-summary:hover { color: var(--paint); }
+  .live-linescore {
+    width: 100%;
+    overflow-x: auto;
+    padding-top: 8px;
+  }
+  .live-linescore table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .live-linescore th, .live-linescore td {
+    padding: 4px 6px;
+    text-align: center;
+    min-width: 22px;
+  }
+  .live-linescore th {
+    color: var(--paint-faint);
+    font-family: var(--font-label);
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--field-light);
+  }
+  .live-linescore th.cur { color: var(--gold); }
+  .live-linescore td {
+    color: var(--ink);
+    background: var(--card);
+    border-radius: 2px;
+    box-shadow: inset 0 -1px 0 var(--card-shade);
+    font-weight: 500;
+  }
+  .live-linescore td.team {
+    text-align: left;
+    font-family: var(--font-label);
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--paint);
+    background: none;
+    box-shadow: none;
+    padding-left: 0;
+    min-width: 56px;
+  }
+  .live-linescore td.empty {
+    color: var(--ink-faint);
+    background: var(--card-shade);
+  }
+  .live-linescore td.cur { color: var(--ink); background: var(--gold-soft); }
+  .live-linescore td.tot {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .live-linescore td.tot.r {
+    color: var(--ink);
+    background: var(--gold-soft);
+  }
+
+  /* WP sparkline (live card) */
+  .live-wp-spark {
+    border-top: 1px solid var(--field-light);
+    padding-top: 12px;
+  }
+  .live-wp-spark .spark-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 6px;
+    font-family: var(--font-label);
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--paint-faint);
+    font-weight: 400;
+  }
+  .live-wp-spark .spark-meta {
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em; color: var(--paint-dim);
+    text-transform: none;
+  }
+  .live-wp-spark .spark-svg {
+    width: 100%; height: 48px; display: block;
+  }
+
+  /* NL Central live radar — small painted strips on the iron */
+  .nlc-radar {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 8px;
+  }
+  .nlc-game {
+    background: var(--field-shade);
+    border: none;
+    border-radius: 0;
+    padding: 10px 12px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .nlc-game.live {
+    background: var(--field-light);
+  }
+  .nlc-game.final { opacity: 0.65; }
+  .nlc-state {
+    font-family: var(--font-label);
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--paint-faint); font-weight: 400;
+    margin-bottom: 6px;
+  }
+  .nlc-game.live .nlc-state { color: var(--flag-red); }
+  .nlc-game.live .nlc-state::before { content: '▰ '; }
+  .nlc-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 2px 0;
+    color: var(--paint);
+  }
+  .nlc-row .abbr {
+    font-family: var(--font-label);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--paint-dim); font-weight: 400;
+  }
+  .nlc-row .num {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--paint);
+    min-width: 1.4ch; text-align: right;
+  }
+  .nlc-row.lead .num { color: var(--gold); }
+  .nlc-row.lead .abbr { color: var(--paint); }
+  .nlc-row .prob {
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 500;
+    color: var(--paint-faint);
+    text-align: right;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    max-width: 70%;
+  }
+  .nlc-row.sched-row { padding: 1px 0; }
+
+  /* Win probability chart in highlights modal */
+  .wp-chart {
+    margin: 0 0 18px;
+    background: var(--field-shade);
+    border: none;
+    border-radius: 0;
+    padding: 12px 14px 8px;
+  }
+  .wp-chart-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 6px;
+    font-family: var(--font-label);
+    font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--paint-faint); font-weight: 400;
+  }
+  .wp-chart-header .swing {
+    color: var(--gold);
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+  .wp-svg {
+    width: 100%; height: 80px; display: block;
+  }
+
+  /* Standings — painted labels on the iron, cream tile chips for W/L numbers */
+  .standings-table {
+    background: none;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+  }
+  .standings-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto auto 4em 4em;
+    gap: 14px;
+    padding: 12px 4px;
+    align-items: center;
+    border-bottom: 1px solid var(--field-light);
+  }
+  .standings-row:last-child { border-bottom: none; }
+  .standings-row.header {
+    font-family: var(--font-label);
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--paint-faint); font-weight: 400;
+    border-bottom: 1px solid var(--field-light);
+  }
+  .standings-row.header > div { font-family: inherit; }
+  .standings-row.cubs {
+    background: none;
+  }
+  .standings-row .rank {
+    font-family: var(--font-mono);
+    color: var(--paint-faint); font-weight: 500;
+    font-size: 12px;
+  }
+  .standings-row.cubs .rank { color: var(--paint); font-weight: 700; }
+  .standings-row .team-name {
+    font-family: var(--font-label);
+    font-size: 16px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--paint-dim);
+    font-weight: 400;
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.25);
+  }
+  .standings-row.cubs .team-name {
+    color: var(--paint);
+    font-weight: 700;
+  }
+  .standings-row .num {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--ink);
+    background: var(--card);
+    border-radius: 3px;
+    padding: 3px 9px 4px;
+    line-height: 1;
+    min-width: 2.4em;
+    text-align: center;
+    box-shadow: var(--tile-shadow-small);
+  }
+  .standings-row.header .num {
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    font-family: var(--font-label);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--paint-faint);
+    text-align: left;
+    min-width: 0;
+  }
+  /* PCT and GB are secondary numerics — painted on green, not tile chips */
+  .standings-row:not(.header) .num.pct,
+  .standings-row:not(.header) .num.gb {
+    font-family: var(--font-mono);
+    color: var(--paint-dim);
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    min-width: 0;
+    text-align: left;
+  }
+  .standings-row.cubs .num.pct,
+  .standings-row.cubs .num.gb { color: var(--paint); font-weight: 700; }
+
+  /* Games — calendar-grid of cream tile cards on the green iron */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .game-card {
+    background: var(--card);
+    color: var(--ink);
+    border: none;
+    border-radius: 4px;
+    padding: 12px 14px 14px;
+    position: relative;
+    text-align: left;
+    font: inherit;
+    cursor: default;
+    box-shadow: var(--tile-shadow);
+    transition: box-shadow 0.15s var(--ease);
+  }
+  .game-card.loss {
+    background: var(--card-shade);
+    color: var(--ink-faint);
+  }
+  .game-card.live {
+    background: var(--card);
+    box-shadow: 0 0 0 2px var(--flag-red), var(--tile-shadow);
+  }
+  .game-card.clickable {
+    cursor: pointer;
+  }
+  .game-card.clickable:hover,
+  .game-card.clickable:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--gold), var(--tile-shadow);
+  }
+
+  .gc-date {
+    font-family: var(--font-label);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 400;
+    margin-bottom: 2px;
+  }
+  .gc-opp {
+    font-family: var(--font-display);
+    font-size: 17px;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .game-card.loss .gc-opp { color: var(--ink-faint); }
+  .gc-opp .at {
+    color: var(--ink-faint);
+    margin-right: 4px;
+    font-weight: 400;
+  }
+  .gc-result {
+    position: absolute;
+    top: 12px; right: 12px;
+    font-family: var(--font-display);
+    font-size: 22px;
+    line-height: 1;
+    width: 1.5em;
+    text-align: center;
+    color: var(--ink);
+  }
+  .game-card.loss .gc-result { color: var(--ink-faint); }
+  .gc-score {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+  .game-card.loss .gc-score { color: var(--ink-faint); }
+  .gc-score .opp { color: var(--ink-faint); }
+  .gc-time {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+  .gc-status {
+    font-family: var(--font-label);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--flag-red);
+    font-weight: 400;
+    margin-bottom: 4px;
+  }
+  .gc-status::before { content: '▰ '; }
+  .gc-meta {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--ink-faint);
+    line-height: 1.4;
+    font-style: italic;
+  }
+  .gc-meta .dec-w { color: var(--ink); font-style: normal; font-weight: 600; }
+  .gc-meta .dec-l { color: var(--ink-faint); font-style: normal; }
+  .gc-meta .dec-s { color: var(--gold-soft); font-style: normal; font-weight: 600; }
+  .gc-meta .sep { color: var(--ink-faint); margin: 0 4px; }
+  .gc-cue {
+    display: block;
+    margin-top: 6px;
+    font-family: var(--font-label);
+    font-size: 10px;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: var(--gold-soft);
+    font-weight: 400;
+  }
+  .gc-cue::before { content: '▶ '; font-size: 0.85em; }
+
+  /* Opp record badge — small painted parenthetical, no box */
+  .opp-record {
+    display: inline-block;
+    margin-left: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--ink-faint);
+    text-transform: none;
+  }
+  .opp-record::before { content: '('; }
+  .opp-record::after  { content: ')'; }
+  .opp-record-lg {
+    margin-left: 10px;
+    font-size: 13px;
+    color: var(--paint-dim);
+  }
+
+  @media (max-width: 720px) {
+    .games-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 8px;
+    }
+    .game-card { padding: 10px 12px 12px; }
+    .gc-opp { font-size: 15px; }
+    .gc-score { font-size: 16px; }
+    .gc-result { font-size: 20px; }
+  }
+
+  /* Highlights modal — dark green-iron panel for video playback */
+  .hl-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: oklch(0.10 0.04 145 / 0.75);
+    display: none;
+    align-items: flex-start; justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .hl-overlay.show { display: flex; opacity: 1; }
+  .hl-modal {
+    background: var(--field-deep);
+    border: none;
+    border-radius: 4px;
+    width: min(960px, 100%);
+    padding: 24px 28px 28px;
+    box-shadow: 0 30px 60px oklch(0 0 0 / 0.55);
+    position: relative;
+  }
+  .hl-close {
+    position: absolute; top: 14px; right: 14px;
+    width: 32px; height: 32px;
+    background: var(--field-shade);
+    border: none;
+    color: var(--paint);
+    border-radius: 4px;
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .hl-close:hover { background: var(--field-light); }
+  .hl-title {
+    font-family: var(--font-label);
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--paint);
+    margin: 0 36px 6px 0;
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.30);
+  }
+  .hl-sub {
+    font-family: var(--font-mono);
+    font-size: 12px; color: var(--paint-dim);
+    margin-bottom: 18px; letter-spacing: 0.04em;
+  }
+  .hl-player {
+    background: oklch(0.05 0 0);
+    border-radius: 4px; overflow: hidden;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--paint-faint); font-size: 13px;
+  }
+  .hl-player video { width: 100%; height: 100%; display: block; }
+  .hl-now-title {
+    font-family: var(--font-label);
+    font-size: 13px; font-weight: 400;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--paint);
+    margin: 0 0 4px;
+  }
+  .hl-now-blurb {
+    font-family: var(--font-body);
+    font-size: 13px; color: var(--paint-dim); margin: 0 0 18px;
+    line-height: 1.5;
+  }
+  .hl-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .hl-item {
+    background: var(--field-shade);
+    border: none;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    color: var(--paint);
+    font: inherit;
+    transition: background 0.2s;
+  }
+  .hl-item:hover { background: var(--field-light); }
+  .hl-item.active { box-shadow: 0 0 0 2px var(--gold); }
+  .hl-thumb {
+    width: 100%; aspect-ratio: 16 / 9;
+    background-size: cover; background-position: center;
+    background-color: oklch(0.05 0 0);
+    position: relative;
+  }
+  .hl-thumb::after {
+    content: '▶'; position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--card); font-size: 26px;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.7);
+    opacity: 0.85;
+  }
+  .hl-item-title {
+    padding: 8px 10px;
+    font-family: var(--font-body);
+    font-size: 12px; line-height: 1.35;
+    font-weight: 600;
+    color: var(--paint);
+  }
+  .hl-empty {
+    text-align: center;
+    color: var(--paint-dim);
+    padding: 30px 20px;
+    font-size: 14px;
+  }
+  .hl-loading {
+    text-align: center;
+    font-family: var(--font-label);
+    color: var(--paint-faint);
+    padding: 30px 20px;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  /* Fly the W */
+  .fly-w {
+    margin-top: 64px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 18px;
+  }
+  .w-flag {
+    /* Real W flag: white field, blue W. Pops against the green iron. */
+    background: oklch(0.99 0.002 80);
+    border: none;
+    width: 180px; height: 120px;
+    position: relative;
+    cursor: pointer;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 8% 50%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px oklch(0 0 0 / 0.40);
+  }
+  .w-flag span {
+    font-family: var(--font-display);
+    color: var(--ink);
+    font-size: 88px;
+    line-height: 1;
+    margin-left: 12px;
+  }
+  .w-flag.flying { animation: flutter 0.8s ease-in-out 2; }
+  @keyframes flutter {
+    0%, 100% { transform: scale(1.1) rotate(-3deg) translateY(-6px); }
+    50% { transform: scale(1.1) rotate(3deg) translateY(6px); }
+  }
+  .fly-w-caption {
+    font-family: var(--font-body);
+    color: var(--paint-dim);
+    font-size: 13px;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* Toast — small cream chip, mono numerics, no celebration drama */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+    background: var(--card);
+    color: var(--ink);
+    padding: 8px 14px 9px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-weight: 500; font-size: 12px;
+    letter-spacing: 0.04em;
+    box-shadow:
+      inset 0 -2px 0 var(--card-shade),
+      0 4px 14px oklch(0 0 0 / 0.40);
+    z-index: 100;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    max-width: 90vw;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  /* Footer */
+  footer {
+    position: relative; z-index: 2;
+    max-width: 1280px; margin: 0 auto;
+    padding: 32px 24px 48px;
+    text-align: center;
+    font-family: var(--font-mono);
+    color: var(--paint-faint);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    border-top: 1px solid var(--field-light);
+    margin-top: 64px;
+  }
+  footer a { color: var(--paint-dim); }
+  footer a:hover { color: var(--paint); }
+
+  #confetti-canvas {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 99;
+  }
+
+  /* ===== Live scoreboard — score tiles flanking a painted state label ===== */
+  .live-scoreboard {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 18px;
+    align-items: center;
+    padding: 4px 0 8px;
+  }
+  .lsb-team {
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    min-width: 0;
+  }
+  .lsb-logo {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lsb-logo img {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .lsb-score {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 6vw, 56px);
+    line-height: 1;
+    color: var(--ink);
+    background: var(--card);
+    padding: 0.06em 0.18em 0.10em;
+    border-radius: 4px;
+    box-shadow: var(--tile-shadow);
+    letter-spacing: -0.04em;
+    font-weight: 400;
+    min-width: 1.4em;
+  }
+  .lsb-team.lead .lsb-score {
+    box-shadow: 0 0 0 2px var(--gold), var(--tile-shadow);
+  }
+  .lsb-abbr {
+    font-family: var(--font-label);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paint);
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.25);
+  }
+  .lsb-record {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--paint-dim);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .lsb-mid {
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 96px;
+  }
+  .lsb-state {
+    font-family: var(--font-label);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--paint);
+    text-align: center;
+    line-height: 1.2;
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.30);
+  }
+  .lsb-state .arr { margin-right: 2px; }
+
+  /* Subtler secondary blocks inside the live card. */
+  .live-now .live-wp-spark { padding-top: 8px; opacity: 0.9; }
+  .live-now .live-wp-spark .spark-svg { height: 36px; }
+  .live-now .live-linescore { padding-top: 8px; }
+  .live-now .live-last {
+    font-size: 13px; padding: 8px 10px;
+  }
+
+  @media (max-width: 720px) {
+    .topbar { padding: 12px 16px; }
+    main { padding: 20px 14px 60px; }
+    .hero { padding: 32px 0 24px; }
+    .standings-row { grid-template-columns: 28px 1fr 50px 50px 60px; gap: 8px; padding: 12px 14px; font-size: 13px; }
+    .standings-row .pct { display: none; }
+    .next-game-card { padding: 20px; }
+    .next-game-countdown { text-align: left; }
+  }
+
+  /* Mobile polish for the live card */
+  @media (max-width: 720px) {
+    .next-game-card.live-now { padding: 18px 14px; gap: 14px; }
+
+    /* Linescore: smaller cells; still horizontally scrolls if needed. */
+    .live-linescore table { font-size: 11px; }
+    .live-linescore th, .live-linescore td { padding: 3px 4px; min-width: 18px; }
+    .live-linescore td.team { min-width: 44px; padding-left: 0; font-size: 11px; }
+
+    /* WP sparkline */
+    .live-wp-spark .spark-svg { height: 44px; }
+    .live-wp-spark .spark-header { flex-wrap: wrap; gap: 4px; }
+    .live-wp-spark .spark-meta { font-size: 9px; }
+
+    .live-last { font-size: 12px; padding: 7px 10px; }
+
+    /* NL Central radar: 2 columns on tablet/large phone, 1 below. */
+    .nlc-radar { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .nlc-game { padding: 9px 10px; font-size: 13px; }
+    .nlc-row .abbr { font-size: 11px; }
+
+    /* Scoreboard mobile */
+    .live-scoreboard { gap: 12px; padding: 4px 4px 10px; }
+    .lsb-logo { width: 48px; height: 48px; }
+    .lsb-score { font-size: clamp(40px, 13vw, 56px); }
+    .lsb-abbr { font-size: 14px; letter-spacing: 0.1em; }
+    .lsb-record { font-size: 10px; }
+    .lsb-mid { gap: 6px; min-width: 0; }
+    .lsb-state { font-size: 12px; letter-spacing: 0.16em; }
+  }
+
+  @media (max-width: 480px) {
+    .nlc-radar { grid-template-columns: 1fr; }
+    .live-scoreboard { gap: 8px; }
+    .lsb-logo { width: 40px; height: 40px; }
+    .lsb-score { font-size: 44px; }
+    .lsb-state { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img class="c-logo" src="cubs-logo.png" alt="Chicago Cubs" width="44" height="44">
+      <div class="brand-text">
+        Magic Number
+        <small>Cubs Countdown · 2026</small>
+      </div>
+    </div>
+    <div class="status">
+      <a class="lab-link" href="wp-overlay.html" title="Season-long win-probability overlay">WP Lab</a>
+      <span class="live-pill" id="live-pill" hidden><span class="live-dot"></span> LIVE</span>
+      <span id="last-updated">Loading…</span>
+      <button class="refresh-btn" id="refresh-btn" title="Refresh now">↻</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1 class="hero-label" id="hero-label"><span class="gloss" tabindex="0" title="Combined Cubs wins and chaser losses needed to clinch the division. When this hits 0, the Cubs are champs.">Magic Number</span></h1>
+      <div class="hero-number" id="magic-number"><span class="tile">·</span><span class="tile">·</span></div>
+      <div class="hero-meta-line" id="hero-meta-line">
+        <span id="m-record">·</span><span class="sep">·</span><span id="m-pct">·</span><span class="sep">·</span><span id="m-streak">·</span><span class="sep">·</span><span id="m-last10">·</span>
+      </div>
+      <div class="hero-sublabel" id="magic-context">Crunching the latest from the diamond…</div>
+    </section>
+
+    <section class="section" id="next-game-section" style="display:none;">
+      <h2 id="next-game-title">Next Up</h2>
+      <div id="next-game-content"></div>
+    </section>
+
+    <section class="section" id="nlc-radar-section" style="display:none;">
+      <h2>NL Central Today <span class="count" id="nlc-count"></span></h2>
+      <div class="nlc-radar" id="nlc-radar"></div>
+    </section>
+
+    <section class="section">
+      <h2>NL Central <span class="count" id="standings-count"></span></h2>
+      <div class="standings-table" id="standings-table"></div>
+    </section>
+
+    <section class="section">
+      <h2>Recent Results <span class="count" id="recent-count"></span></h2>
+      <div class="games-grid" id="recent-games"></div>
+    </section>
+
+    <section class="section">
+      <h2>Coming Up <span class="count" id="upcoming-count"></span></h2>
+      <div class="games-grid" id="upcoming-games"></div>
+    </section>
+
+    <section class="fly-w">
+      <button class="w-flag" id="w-flag" aria-label="Fly the W">
+        <span>W</span>
+      </button>
+      <div class="fly-w-caption">Click to fly the W · auto-flies on every Cubs win</div>
+    </section>
+  </main>
+
+  <footer>
+    Data: <a href="https://statsapi.mlb.com" target="_blank" rel="noopener">MLB Stats API</a> ·
+    Auto-refreshing · Hot-takes are 100% your own.<br>
+    Not affiliated with the Chicago Cubs or Major League Baseball.
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="hl-overlay" id="hl-overlay" role="dialog" aria-modal="true" aria-labelledby="hl-title">
+    <div class="hl-modal" id="hl-modal">
+      <button class="hl-close" id="hl-close" aria-label="Close highlights">×</button>
+      <h3 class="hl-title" id="hl-title">Highlights</h3>
+      <div class="hl-sub" id="hl-sub"></div>
+      <div id="hl-body"></div>
+    </div>
+  </div>
+
+<script>
+  // ---------- Constants ----------
+  const TEAM_ID = 112; // Chicago Cubs
+  const NL_CENTRAL_DIV_ID = 205;
+  const NL_LEAGUE_ID = 104;
+  const TOTAL_GAMES = 162;
+  const SEASON = new Date().getFullYear();
+  const REFRESH_MS = 60_000;
+  const REFRESH_LIVE_MS = 15_000;
+
+  const TEAM_ABBR = {
+    112: 'CUBS', 134: 'PIRATES', 138: 'CARDINALS', 158: 'BREWERS', 113: 'REDS'
+  };
+
+  // ---------- DOM ----------
+  const $ = (id) => document.getElementById(id);
+  const heroNumber = $('magic-number');
+  const heroContext = $('magic-context');
+  const heroLabel = $('hero-label');
+
+  // ---------- Date helpers ----------
+  function fmtDate(d) {
+    const dt = new Date(d);
+    return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  function fmtTime(d) {
+    const dt = new Date(d);
+    return dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
+  function isoDate(d) {
+    return new Date(d).toISOString().split('T')[0];
+  }
+
+  // ---------- API ----------
+  // Fetch both AL and NL standings — Cubs play interleague opponents too, and
+  // we need every team's record for the upcoming-opponent badges.
+  // Standings: we explicitly ask MLB for yesterday's snapshot. That value is
+  // stable — yesterday's games are over, the math can't change. We then
+  // overlay today's actual final results in `applyTodayDeltas` so the magic
+  // number reflects wins that finished today even if MLB's standings
+  // endpoint hasn't refreshed yet (lag is real — 5-30min after game end).
+  async function fetchStandings() {
+    const yest = new Date(Date.now() - 86400000);
+    const dateStr = isoDate(yest);
+    const url = `https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=${SEASON}&standingsTypes=regularSeason&date=${dateStr}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('standings ' + r.status);
+    return r.json();
+  }
+
+  // Walk today's NL Central games and produce per-team W/L deltas. Finals
+  // count toward actual record; in-progress games are tracked separately as
+  // "live potential" so we can surface a projection without polluting the
+  // canonical magic number.
+  function computeTodayDeltas(nlcGames) {
+    const out = {};
+    const ensure = id => { out[id] ||= { w: 0, l: 0, lw: 0, ll: 0 }; };
+    for (const g of nlcGames || []) {
+      const code = g.status?.codedGameState || '';
+      const isFinal = ['F', 'O'].includes(code) || /Final|Game Over|Completed Early/.test(g.status?.detailedState || '');
+      const isLive = ['I', 'M', 'P'].includes(code) && !isFinal;
+      const home = g.teams?.home, away = g.teams?.away;
+      if (!home || !away || home.score == null || away.score == null) continue;
+      if (isFinal) {
+        const winner = home.score > away.score ? home.team.id : away.team.id;
+        const loser  = home.score > away.score ? away.team.id : home.team.id;
+        ensure(winner); ensure(loser);
+        out[winner].w++;
+        out[loser].l++;
+      } else if (isLive && home.score !== away.score) {
+        const leader = home.score > away.score ? home.team.id : away.team.id;
+        const trailer = home.score > away.score ? away.team.id : home.team.id;
+        ensure(leader); ensure(trailer);
+        out[leader].lw++;
+        out[trailer].ll++;
+      }
+    }
+    return out;
+  }
+
+  // Apply today's deltas onto a baseline standings response. `includeLive`
+  // also folds in the projected outcomes of in-progress games — useful for
+  // showing "if today holds" math, but never used for the canonical number.
+  function applyTodayDeltas(standings, deltas, includeLive = false) {
+    if (!standings?.records) return standings;
+    const records = standings.records.map(div => ({
+      ...div,
+      teamRecords: div.teamRecords.map(t => {
+        const d = deltas[t.team.id];
+        if (!d) return t;
+        const wDelta = d.w + (includeLive ? d.lw : 0);
+        const lDelta = d.l + (includeLive ? d.ll : 0);
+        if (!wDelta && !lDelta) return t;
+        const wins = t.wins + wDelta;
+        const losses = t.losses + lDelta;
+        return {
+          ...t,
+          wins,
+          losses,
+          winningPercentage: (wins / Math.max(1, wins + losses)).toFixed(3)
+        };
+      })
+    }));
+    // Recompute games-back per division so the standings table stays
+    // internally consistent after the overlay.
+    records.forEach(div => {
+      const sorted = [...div.teamRecords].sort((a, b) =>
+        (b.wins / Math.max(1, b.wins + b.losses)) - (a.wins / Math.max(1, a.wins + a.losses))
+        || b.wins - a.wins
+        || a.losses - b.losses
+      );
+      const leader = sorted[0];
+      div.teamRecords.forEach(t => {
+        if (t.team.id === leader.team.id) {
+          t.gamesBack = '-';
+        } else {
+          const gb = ((leader.wins - t.wins) + (t.losses - leader.losses)) / 2;
+          t.gamesBack = gb % 1 === 0 ? String(gb) : gb.toFixed(1);
+        }
+      });
+    });
+    return { ...standings, records };
+  }
+  function buildTeamRecordMap(standings) {
+    const map = {};
+    (standings.records || []).forEach(div => {
+      (div.teamRecords || []).forEach(t => {
+        map[t.team.id] = { wins: t.wins, losses: t.losses };
+      });
+    });
+    return map;
+  }
+  async function fetchSchedule(startDate, endDate) {
+    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${startDate}&endDate=${endDate}&gameType=R&hydrate=team,linescore,decisions,probablePitcher,broadcasts`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('schedule ' + r.status);
+    return r.json();
+  }
+
+  async function fetchLiveFeed(gamePk) {
+    const url = `https://statsapi.mlb.com/api/v1.1/game/${gamePk}/feed/live`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('feed ' + r.status);
+    return r.json();
+  }
+  async function fetchWinProbability(gamePk) {
+    const url = `https://statsapi.mlb.com/api/v1/game/${gamePk}/winProbability`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('wp ' + r.status);
+    return r.json();
+  }
+
+  // Today's slate for the four chasers + Cubs. We query a 3-day window
+  // (yesterday→tomorrow in UTC) and filter to "today" in the user's local
+  // timezone — `isoDate(new Date())` alone returns UTC, which rolls forward
+  // past midnight UTC and would miss tonight's games for CT/MT/PT users.
+  // We also dedupe (intra-division matchups appear under both teams) and
+  // filter the Cubs game out before rendering, since it already has its
+  // own live card.
+  async function fetchNLCentralToday() {
+    const now = new Date();
+    const ystr = new Date(now); ystr.setDate(now.getDate() - 1);
+    const tmr = new Date(now); tmr.setDate(now.getDate() + 1);
+    const teamIds = '113,134,138,158,112';
+    const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${teamIds}&startDate=${isoDate(ystr)}&endDate=${isoDate(tmr)}&hydrate=team,linescore,probablePitcher`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('nlc-today ' + r.status);
+    return r.json();
+  }
+  function localDateKey(d) {
+    const dt = new Date(d);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  }
+
+  function normalizeClipItem(it) {
+    return {
+      id: it.id,
+      title: it.headline || it.title || 'Highlight',
+      blurb: it.description || it.blurb || '',
+      duration: it.duration || '',
+      thumb: pickThumb(it.image),
+      mp4: pickMp4(it.playbacks),
+      date: it.date || ''
+    };
+  }
+  function dedupeClips(items) {
+    const seen = new Set();
+    const out = [];
+    for (const it of items) {
+      if (!it || it.id == null) continue;
+      const key = String(it.id);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(it);
+    }
+    return out;
+  }
+
+  // Final-game highlights: lazy-fetched per gamePk, cached for the session.
+  const highlightsCache = new Map();
+  async function fetchHighlights(gamePk) {
+    if (highlightsCache.has(gamePk)) return highlightsCache.get(gamePk);
+    const url = `https://statsapi.mlb.com/api/v1/game/${gamePk}/content`;
+    const p = fetch(url).then(r => {
+      if (!r.ok) throw new Error('content ' + r.status);
+      return r.json();
+    }).then(j => {
+      const items = j?.highlights?.highlights?.items || [];
+      return items.map(normalizeClipItem).filter(h => h.mp4);
+    });
+    highlightsCache.set(gamePk, p);
+    return p;
+  }
+
+  function pickThumb(image) {
+    const cuts = image?.cuts || [];
+    // Prefer a mid-size cut around 320–480 wide; fall back to any.
+    const sorted = cuts.slice().sort((a, b) => Math.abs((a.width || 0) - 360) - Math.abs((b.width || 0) - 360));
+    return sorted[0]?.src || '';
+  }
+  function pickMp4(playbacks = []) {
+    // Prefer the highest reasonable mp4 (1800K ≈ 720p) so it streams clean on a laptop.
+    const mp4s = playbacks.filter(p => /mp4/i.test(p.name || '') && p.url);
+    const ranked = mp4s.sort((a, b) => bitrate(b) - bitrate(a));
+    return ranked.find(p => bitrate(p) <= 2400) ? ranked.find(p => bitrate(p) <= 2400).url : (ranked[0]?.url || '');
+  }
+  function bitrate(p) {
+    const m = (p.name || '').match(/(\d+)K/i);
+    return m ? parseInt(m[1], 10) : 0;
+  }
+
+  // ---------- Helpers ----------
+  function shortName(team) {
+    if (!team) return 'the field';
+    if (team.teamName) return team.teamName;
+    if (team.name) {
+      const parts = team.name.split(' ');
+      return parts[parts.length - 1];
+    }
+    return 'the field';
+  }
+
+  // ---------- Magic number math ----------
+  // The binding chaser for the magic number is the non-leader team with the
+  // FEWEST losses (their losses are what cap the leader's clinch path), NOT
+  // necessarily whoever sits in 2nd place by win pct. When multiple teams are
+  // tied on losses, every one of them is binding.
+  function computeMagic(nlCentralRecords) {
+    const winPct = t => t.wins / Math.max(1, t.wins + t.losses);
+    const sorted = [...nlCentralRecords].sort((a, b) =>
+      winPct(b) - winPct(a) || b.wins - a.wins || a.losses - b.losses
+    );
+    const cubs = sorted.find(t => t.team.id === TEAM_ID);
+    const leader = sorted[0];
+    const isLeader = leader.team.id === TEAM_ID;
+
+    // Find binding chaser(s) by fewest losses among non-leaders.
+    const nonLeaders = sorted.filter(t => t.team.id !== leader.team.id);
+    const minLosses = nonLeaders.length ? Math.min(...nonLeaders.map(t => t.losses)) : 0;
+    const bindingChasers = nonLeaders.filter(t => t.losses === minLosses);
+    const chaser = bindingChasers[0] || (isLeader ? sorted[1] : leader);
+
+    const magicToClinch = Math.max(0, (TOTAL_GAMES + 1) - cubs.wins - chaser.losses);
+    const tragicNumber = isLeader
+      ? null
+      : Math.max(0, (TOTAL_GAMES + 1) - leader.wins - cubs.losses);
+
+    return { sorted, cubs, leader, chaser, bindingChasers, isLeader, magicToClinch, tragicNumber };
+  }
+
+  // Glossary definitions. Hairline-underlined inline; native tooltip on hover/focus.
+  const GLOSS = {
+    'Magic Number':       'Combined Cubs wins and chaser losses needed to clinch the division. When this hits 0, the Cubs are champs.',
+    'Chase Number':       'When the Cubs aren’t in first, the wins needed to take over the lead. The magic number doesn’t start until they’re in front.',
+    'Elimination number': 'Combined chaser wins and Cubs losses that would knock the Cubs out of contention. Sometimes called the tragic number.',
+  };
+  function labelGloss(term) {
+    const def = GLOSS[term];
+    if (!def) return term;
+    return `<span class="gloss" tabindex="0" title="${def.replace(/"/g, '&quot;')}">${term}</span>`;
+  }
+
+  // Format a list of chaser team names: "Cardinals", "Cardinals & Reds",
+  // "Cardinals, Reds & Brewers".
+  function formatChasers(teams) {
+    const names = teams.map(t => shortName(t.team));
+    if (names.length === 0) return 'the field';
+    if (names.length === 1) return names[0];
+    if (names.length === 2) return `${names[0]} &amp; ${names[1]}`;
+    return names.slice(0, -1).join(', ') + ` &amp; ${names[names.length - 1]}`;
+  }
+
+  // ---------- Render: Hero ----------
+  let lastMagic = null;
+  function renderHero(state) {
+    const { cubs, isLeader, magicToClinch, leader, chaser, bindingChasers, tragicNumber } = state;
+
+    let displayNumber, contextHtml, label;
+
+    if (isLeader) {
+      displayNumber = magicToClinch;
+      label = 'Magic Number';
+      const chaserPhrase = bindingChasers && bindingChasers.length
+        ? formatChasers(bindingChasers)
+        : (chaser ? shortName(chaser.team) : 'the field');
+      const lossWord = (bindingChasers && bindingChasers.length > 1) ? 'losses' : 'losses';
+      const tieNote = (bindingChasers && bindingChasers.length > 1)
+        ? `<span style="display:block;margin-top:6px;color:var(--ink-faint);font-size:0.92em;">
+            All tied at ${bindingChasers[0].losses} losses. Every one of their losses counts toward the magic number.
+          </span>`
+        : '';
+      const projNote = (state.liveProjectedDelta > 0)
+        ? `<span style="display:block;margin-top:8px;color:var(--gold);font-size:0.92em;">
+            If today's live games hold, magic number drops to
+            <strong>${state.liveProjectedMagic}</strong>
+            (down ${state.liveProjectedDelta}).
+          </span>`
+        : '';
+      contextHtml = `Any combination of <strong>Cubs wins</strong> and <strong>${chaserPhrase} ${lossWord}</strong> totaling
+        <strong>${magicToClinch}</strong> clinches the NL Central.${tieNote}${projNote}`;
+    } else {
+      // Cubs trailing — show "games to overtake the leader" (chase number) as the headline
+      const chase = Math.max(0, leader.wins - cubs.wins) + 1;
+      displayNumber = chase;
+      label = 'Chase Number';
+      contextHtml = `Cubs trail the <strong>${shortName(leader.team)}</strong> by
+        <strong>${cubs.gamesBack || (leader.wins - cubs.wins) + ' GB'}</strong>.
+        Take the division lead, and the magic number begins.
+        ${tragicNumber !== null ? `${labelGloss('Elimination number')}: <strong>${tragicNumber}</strong>.` : ''}`;
+    }
+
+    heroLabel.innerHTML = labelGloss(label);
+    heroContext.innerHTML = contextHtml;
+    renderTiles(heroNumber, displayNumber);
+    lastMagic = displayNumber;
+  }
+
+  // Render a number as a row of tile-card digits.
+  //   First load: tiles drop into their slots from above, staggered, like a
+  //                scoreboard operator slotting cards in. The last tile arrives
+  //                showing yesterday's last digit (last_digit + 1), then flips
+  //                down to the actual digit. The drama of the number getting
+  //                lower.
+  //   Digit count changes mid-session (e.g. 100 → 99): instant rebuild.
+  //   Single-digit changes: only the affected tile flips.
+  // Every flip swaps content at the animation midpoint so the change is visible.
+  // Honors prefers-reduced-motion.
+  let tilesFirstRender = true;
+  const TILE_ARRIVE_MS = 560;
+  const TILE_STAGGER_MS = 140;
+  const TILE_FLIP_MS = 380;
+  const TILE_FLIP_HALF = TILE_FLIP_MS / 2;
+
+  function flipDigit(tile, newDigit) {
+    tile.classList.remove('flip');
+    void tile.offsetWidth;
+    tile.classList.add('flip');
+    // Swap content at flip midpoint, when the tile is edge-on (invisible).
+    setTimeout(() => { tile.textContent = newDigit; }, TILE_FLIP_HALF);
+  }
+
+  function renderTiles(el, value) {
+    const str = String(value);
+    const digits = str.split('');
+    const reduced = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // First real render: rebuild and animate the cascade. Last tile arrives one
+    // higher than the actual digit, then flips down — the drama beat.
+    if (tilesFirstRender) {
+      tilesFirstRender = false;
+      const useArrive = !reduced;
+      const lastIdx = digits.length - 1;
+      const lastDigit = parseInt(digits[lastIdx], 10);
+      const dramatize = useArrive
+        && Number.isFinite(lastDigit)
+        && lastDigit < 9;
+      const arriveDigits = dramatize
+        ? [...digits.slice(0, -1), String(lastDigit + 1)]
+        : digits;
+
+      el.innerHTML = arriveDigits.map((d, i) => useArrive
+        ? `<span class="tile arrive" style="--tile-i:${i}">${escapeHTML(d)}</span>`
+        : `<span class="tile">${escapeHTML(d)}</span>`
+      ).join('');
+
+      if (dramatize) {
+        // Wait for cascade to settle on the dramatized digit, then flip down.
+        const cascadeEnd = lastIdx * TILE_STAGGER_MS + TILE_ARRIVE_MS;
+        const beat = 320;
+        setTimeout(() => {
+          const tiles = el.querySelectorAll('.tile');
+          const lastTile = tiles[lastIdx];
+          if (lastTile) flipDigit(lastTile, digits[lastIdx]);
+        }, cascadeEnd + beat);
+      }
+      return;
+    }
+
+    const existing = Array.from(el.querySelectorAll('.tile'));
+    if (existing.length !== digits.length) {
+      el.innerHTML = digits.map(d => `<span class="tile">${escapeHTML(d)}</span>`).join('');
+      return;
+    }
+    digits.forEach((d, i) => {
+      const tile = existing[i];
+      if (tile.textContent === d) return;
+      if (reduced) { tile.textContent = d; return; }
+      flipDigit(tile, d);
+    });
+  }
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  // ---------- Render: meta cards ----------
+  function renderMeta(cubs, recentGames) {
+    $('m-record').textContent = `${cubs.wins}-${cubs.losses}`;
+    $('m-pct').textContent = (cubs.winningPercentage || (cubs.wins / Math.max(1, cubs.wins + cubs.losses)).toFixed(3));
+
+    const streak = cubs.streak || {};
+    const streakStr = streak.streakCode || '·';
+    const streakEl = $('m-streak');
+    streakEl.textContent = streakStr;
+    streakEl.className = '';
+    if (streakStr.startsWith('W')) {
+      streakEl.classList.add('pos');
+      const n = streakStr.slice(1);
+      streakEl.title = `${n}-game win streak.`;
+    } else if (streakStr.startsWith('L')) {
+      streakEl.classList.add('neg');
+      const n = streakStr.slice(1);
+      streakEl.title = `${n}-game losing streak.`;
+    } else {
+      streakEl.title = '';
+    }
+
+    // Last 10 from records
+    let last10 = '·';
+    if (cubs.records && cubs.records.splitRecords) {
+      const l10 = cubs.records.splitRecords.find(r => r.type === 'lastTen');
+      if (l10) last10 = `${l10.wins}-${l10.losses}`;
+    } else if (recentGames && recentGames.length) {
+      const last = recentGames.slice(-10);
+      const w = last.filter(g => g.result === 'W').length;
+      last10 = `${w}-${last.length - w}`;
+    }
+    $('m-last10').textContent = last10;
+  }
+
+  // ---------- Render: standings ----------
+  function renderStandings(sorted) {
+    const tbl = $('standings-table');
+    const header = `
+      <div class="standings-row header">
+        <div class="rank">#</div>
+        <div>Team</div>
+        <div class="num">W</div>
+        <div class="num">L</div>
+        <div class="num pct">PCT</div>
+        <div class="num gb">GB</div>
+      </div>`;
+    const rows = sorted.map((t, i) => {
+      const isCubs = t.team.id === TEAM_ID;
+      const pct = (t.wins / Math.max(1, t.wins + t.losses)).toFixed(3).replace(/^0/, '');
+      const gb = i === 0 ? '·' : (t.gamesBack || '·');
+      return `
+        <div class="standings-row ${isCubs ? 'cubs' : ''}">
+          <div class="rank">${i + 1}</div>
+          <div class="team-name">${t.team.name}</div>
+          <div class="num">${t.wins}</div>
+          <div class="num">${t.losses}</div>
+          <div class="num pct">${pct}</div>
+          <div class="num gb">${gb}</div>
+        </div>`;
+    }).join('');
+    tbl.innerHTML = header + rows;
+    $('standings-count').textContent = `${sorted.length} TEAMS`;
+  }
+
+  // ---------- Games ----------
+  function classifyGame(g) {
+    const isHome = g.teams.home.team.id === TEAM_ID;
+    const cubsSide = isHome ? g.teams.home : g.teams.away;
+    const oppSide = isHome ? g.teams.away : g.teams.home;
+    const status = g.status.detailedState;
+    const codedState = g.status.codedGameState;
+    const isFinal = ['F', 'O'].includes(codedState) || /Final|Game Over|Completed Early/.test(status);
+    const isLive = ['I', 'M', 'P'].includes(codedState) && !isFinal;
+    let result = null;
+    if (isFinal && cubsSide.score != null && oppSide.score != null) {
+      result = cubsSide.score > oppSide.score ? 'W' : (cubsSide.score < oppSide.score ? 'L' : 'T');
+    }
+    return {
+      raw: g, isHome, cubsSide, oppSide, status, codedState, isFinal, isLive, result,
+      date: g.gameDate
+    };
+  }
+
+  function lastName(fullName) {
+    if (!fullName) return '';
+    const parts = fullName.trim().split(/\s+/);
+    return parts.length === 1 ? parts[0] : `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
+  }
+
+  // MLB hosts player headshots at midfield.mlbstatic.com keyed by player ID.
+  // Sizes: 60, 90, 120, 180. Fallback hides the broken image gracefully.
+  function headshotImg(playerId, { size = 60, cls = '' } = {}) {
+    if (!playerId) return '';
+    const url = `https://midfield.mlbstatic.com/v1/people/${playerId}/spots/${size}`;
+    return `<img class="${cls}" src="${url}" alt="" loading="lazy" onerror="this.style.display='none'">`;
+  }
+
+  // Pick a single TV network for a Cubs game. Prefer national broadcasts
+  // (ESPN, FOX, MLBN, AppleTV) — that's the "where can I watch this?" answer
+  // for fans outside Chicago. Fall back to whichever side the Cubs are on.
+  function pickTvBroadcasts(game, isHome) {
+    const all = (game.broadcasts || []).filter(b => b.type === 'TV');
+    const cubsSide = isHome ? 'home' : 'away';
+    const filtered = all.filter(b => b.isNational || b.homeAway === cubsSide);
+    const names = [...new Set(filtered.map(b => b.name))];
+    return names.slice(0, 2);
+  }
+
+  // Calendar-grid game card. Final games are clickable buttons that open
+  // the highlights modal; scheduled and live games render as static panels.
+  function renderGameCard(c, recordMap) {
+    const oppName = c.oppSide.team.teamName || c.oppSide.team.name;
+    const oppRec = recordMap && recordMap[c.oppSide.team.id];
+    const recordTag = (!c.isFinal && !c.isLive && oppRec)
+      ? ` <span class="opp-record">${oppRec.wins}-${oppRec.losses}</span>`
+      : '';
+    const dateHTML = `<div class="gc-date">${fmtDate(c.date)}</div>`;
+    const oppHTML = `<div class="gc-opp"><span class="at">${c.isHome ? 'vs' : '@'}</span>${oppName}${recordTag}</div>`;
+
+    if (c.isFinal) {
+      const result = c.result || '';
+      const resultGlyph = result ? `<div class="gc-result ${result}">${result}</div>` : '';
+      const scoreHTML = `<div class="gc-score">${c.cubsSide.score}<span class="opp">–${c.oppSide.score}</span></div>`;
+      const dec = c.raw.decisions || {};
+      const decBits = [];
+      if (dec.winner) decBits.push(`<span class="dec-w">W ${lastName(dec.winner.fullName)}</span>`);
+      if (dec.loser) decBits.push(`<span class="dec-l">L ${lastName(dec.loser.fullName)}</span>`);
+      if (dec.save) decBits.push(`<span class="dec-s">SV ${lastName(dec.save.fullName)}</span>`);
+      const decHTML = decBits.length
+        ? `<div class="gc-meta">${decBits.join('<span class="sep">·</span>')}</div>`
+        : '';
+      const cls = `game-card final ${result.toLowerCase()} clickable`;
+      return `
+        <button type="button" class="${cls}" data-gamepk="${c.raw.gamePk}" data-ishome="${c.isHome ? '1' : '0'}" aria-label="Highlights for ${c.isHome ? 'vs' : '@'} ${oppName}, ${result || ''} ${c.cubsSide.score}-${c.oppSide.score}">
+          ${resultGlyph}
+          ${dateHTML}
+          ${oppHTML}
+          ${scoreHTML}
+          ${decHTML}
+          <span class="gc-cue">Highlights</span>
+        </button>`;
+    }
+
+    if (c.isLive) {
+      const scoreHTML = `<div class="gc-score">${c.cubsSide.score ?? 0}<span class="opp">–${c.oppSide.score ?? 0}</span></div>`;
+      const statusHTML = `<div class="gc-status">${c.status || 'Live'}</div>`;
+      return `
+        <div class="game-card live">
+          ${dateHTML}
+          ${oppHTML}
+          ${scoreHTML}
+          ${statusHTML}
+        </div>`;
+    }
+
+    // Scheduled
+    const homeP = c.raw.teams.home.probablePitcher;
+    const awayP = c.raw.teams.away.probablePitcher;
+    const cubsP = c.isHome ? homeP : awayP;
+    const oppP = c.isHome ? awayP : homeP;
+    const probableLine = (cubsP || oppP)
+      ? `${lastName(cubsP?.fullName) || 'TBD'} vs ${lastName(oppP?.fullName) || 'TBD'}`
+      : '';
+    const tvNames = pickTvBroadcasts(c.raw, c.isHome);
+    const metaBits = [];
+    if (probableLine) metaBits.push(probableLine);
+    if (tvNames.length) metaBits.push(tvNames.join(' · '));
+    const metaHTML = metaBits.length
+      ? `<div class="gc-meta">${metaBits.join('<span class="sep">·</span>')}</div>`
+      : '';
+    const timeHTML = `<div class="gc-time">${fmtTime(c.date)}</div>`;
+    return `
+      <div class="game-card scheduled">
+        ${dateHTML}
+        ${oppHTML}
+        ${timeHTML}
+        ${metaHTML}
+      </div>`;
+  }
+
+  function renderGames(recentClassified, upcomingClassified, recordMap) {
+    const r = $('recent-games');
+    const u = $('upcoming-games');
+    if (recentClassified.length === 0) {
+      r.innerHTML = `<div style="color:var(--paint-dim); padding:14px 4px;">No recent games yet. Opening day is right around the corner.</div>`;
+    } else {
+      r.innerHTML = recentClassified.slice().reverse().map(c => renderGameCard(c, recordMap)).join('');
+    }
+    if (upcomingClassified.length === 0) {
+      u.innerHTML = `<div style="color:var(--paint-dim); padding:14px 4px;">Schedule fully played. See you next season.</div>`;
+    } else {
+      u.innerHTML = upcomingClassified.map(c => renderGameCard(c, recordMap)).join('');
+    }
+    $('recent-count').textContent = `${recentClassified.length} GAMES`;
+    $('upcoming-count').textContent = `${upcomingClassified.length} GAMES`;
+  }
+
+  // ---------- Next game card ----------
+  let countdownTimer = null;
+
+  function ordinal(n) {
+    const s = ['th','st','nd','rd'], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  // MLB cap-style team logo, served as SVG so it stays sharp at any DPR.
+  function teamLogoURL(teamId) {
+    return `https://www.mlbstatic.com/team-logos/${teamId}.svg`;
+  }
+
+  // Editorial scoreboard: logo / score / abbreviation / record on each side,
+  // inning state stacked between them. No bases diamond, no WP indicator —
+  // those depths live in the WP sparkline below or were intentionally cut.
+  function renderScoreboard(c, linescore, recordMap) {
+    const inning = linescore.currentInning ?? c.raw.linescore?.currentInning ?? '?';
+    const half = (linescore.inningState || linescore.inningHalf || '').toLowerCase();
+    const halfArrow = half.startsWith('top') ? '▲' : half.startsWith('bot') ? '▼' : '·';
+    const halfLabel = half.startsWith('mid') ? `Mid ${ordinal(inning)}`
+      : half.startsWith('end') ? `End ${ordinal(inning)}`
+      : `<span class="arr">${halfArrow}</span>${ordinal(inning)}`;
+    const outs = linescore.outs ?? 0;
+
+    const cubsScore = c.isHome ? (linescore.teams?.home?.runs ?? c.cubsSide.score ?? 0) : (linescore.teams?.away?.runs ?? c.cubsSide.score ?? 0);
+    const oppScore = c.isHome ? (linescore.teams?.away?.runs ?? c.oppSide.score ?? 0) : (linescore.teams?.home?.runs ?? c.oppSide.score ?? 0);
+
+    const offense = linescore.offense || {};
+    const onFirst = !!offense.first, onSecond = !!offense.second, onThird = !!offense.third;
+
+    const cubsTeam = c.cubsSide.team, oppTeam = c.oppSide.team;
+    const cubsRec = recordMap?.[cubsTeam.id];
+    const oppRec = recordMap?.[oppTeam.id];
+    const cubsAbbr = (cubsTeam.abbreviation || 'CHC').toUpperCase();
+    const oppAbbr = (oppTeam.abbreviation || (oppTeam.teamName || 'OPP').slice(0, 3)).toUpperCase();
+
+    const awayTeam = c.isHome ? oppTeam : cubsTeam;
+    const homeTeam = c.isHome ? cubsTeam : oppTeam;
+    const awayScore = c.isHome ? oppScore : cubsScore;
+    const homeScore = c.isHome ? cubsScore : oppScore;
+    const awayAbbr = c.isHome ? oppAbbr : cubsAbbr;
+    const homeAbbr = c.isHome ? cubsAbbr : oppAbbr;
+    const awayRec = c.isHome ? oppRec : cubsRec;
+    const homeRec = c.isHome ? cubsRec : oppRec;
+    const awayLead = awayScore > homeScore;
+    const homeLead = homeScore > awayScore;
+
+    const teamCell = (team, score, abbr, rec, lead) => `
+      <div class="lsb-team ${lead ? 'lead' : ''}">
+        <div class="lsb-logo"><img src="${teamLogoURL(team.id)}" alt="${team.teamName || team.name || abbr}" loading="lazy" onerror="this.style.display='none'"></div>
+        <div class="lsb-score">${score}</div>
+        <div class="lsb-abbr">${abbr}</div>
+        ${rec ? `<div class="lsb-record">${rec.wins}-${rec.losses}</div>` : ''}
+      </div>`;
+
+    return `
+      <div class="live-scoreboard">
+        ${teamCell(awayTeam, awayScore, awayAbbr, awayRec, awayLead)}
+        <div class="lsb-mid">
+          <div class="lsb-state">${halfLabel}, ${outs} out${outs === 1 ? '' : 's'}</div>
+        </div>
+        ${teamCell(homeTeam, homeScore, homeAbbr, homeRec, homeLead)}
+      </div>`;
+  }
+
+  // Compact win-probability sparkline for the live card. Same data shape as
+  // buildWPChart (highlights modal) but smaller and headline-driven.
+  function wpSparklineHTML(wp, isHome) {
+    if (!Array.isArray(wp) || wp.length < 2) return '';
+    const pts = wp.map(p => {
+      const homeWP = p.homeTeamWinProbability;
+      if (homeWP == null) return null;
+      return isHome ? homeWP : (100 - homeWP);
+    }).filter(v => v != null);
+    if (pts.length < 2) return '';
+    const W = 600, H = 56, P = 4;
+    const xAt = i => P + (i / (pts.length - 1)) * (W - 2 * P);
+    const yAt = v => P + (1 - v / 100) * (H - 2 * P);
+    const path = pts.map((v, i) => `${i === 0 ? 'M' : 'L'}${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join('');
+    const area = path + ` L${xAt(pts.length - 1).toFixed(1)},${H} L${xAt(0).toFixed(1)},${H} Z`;
+    const final = pts[pts.length - 1];
+    const peak = Math.round(Math.max(...pts));
+    const valley = Math.round(Math.min(...pts));
+    const swing = peak - valley;
+    return `
+      <div class="live-wp-spark" title="Cubs win probability over the course of the game. Each point is one play.">
+        <div class="spark-header">
+          <small>Win probability</small>
+          <span class="spark-meta">peak ${peak}% · low ${valley}% · ${swing}pt swing</span>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="spark-svg">
+          <line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="rgba(14,30,75,0.1)" stroke-dasharray="2 4"/>
+          <path d="${area}" fill="rgba(14,51,134,0.18)"/>
+          <path d="${path}" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="${xAt(pts.length - 1).toFixed(1)}" cy="${yAt(final).toFixed(1)}" r="3.5" fill="${final >= 50 ? 'var(--win)' : 'var(--loss)'}"/>
+        </svg>
+      </div>`;
+  }
+
+  // NL Central live radar — every other game in the division today, sorted
+  // live → scheduled → final. Same card shape regardless of state.
+  function dedupeNLCGames(scheduleJson) {
+    const seen = new Set();
+    const games = [];
+    const today = localDateKey(new Date());
+    (scheduleJson.dates || []).forEach(day => {
+      (day.games || []).forEach(g => {
+        if (seen.has(g.gamePk)) return;
+        // Filter to "today" in the viewer's local timezone — gameDate is UTC,
+        // so a 7 PM CT game sits in tomorrow's UTC bucket on the API side.
+        if (localDateKey(g.gameDate) !== today) return;
+        seen.add(g.gamePk);
+        games.push(g);
+      });
+    });
+    return games;
+  }
+  function isCodeLive(code) { return ['I', 'M', 'P'].includes(code); }
+  function isCodeFinal(code) { return ['F', 'O'].includes(code); }
+  function sortNLCGames(games) {
+    const order = (g) => {
+      const c = g.status?.codedGameState || '';
+      if (isCodeLive(c)) return 0;
+      if (isCodeFinal(c)) return 2;
+      return 1;
+    };
+    return games.slice().sort((a, b) => {
+      const oa = order(a), ob = order(b);
+      if (oa !== ob) return oa - ob;
+      return new Date(a.gameDate) - new Date(b.gameDate);
+    });
+  }
+  function renderNLCGame(g) {
+    const home = g.teams.home, away = g.teams.away;
+    // Prefer the API's standard 3-letter abbreviation (CHC, STL, MIL…) so the
+    // radar reads like a scoreboard. Fall back to the project's longer labels
+    // only if the abbreviation isn't hydrated.
+    const homeAbbr = (home.team.abbreviation || TEAM_ABBR[home.team.id] || home.team.teamName || '').toUpperCase();
+    const awayAbbr = (away.team.abbreviation || TEAM_ABBR[away.team.id] || away.team.teamName || '').toUpperCase();
+    const ls = g.linescore || {};
+    const code = g.status?.codedGameState || '';
+    const isFinal = isCodeFinal(code) || /Final|Game Over|Completed/.test(g.status?.detailedState || '');
+    const isLive = isCodeLive(code) && !isFinal;
+    const inning = ls.currentInning;
+    const half = (ls.inningState || '').toLowerCase();
+    let stateStr;
+    if (isFinal) stateStr = 'Final';
+    else if (isLive) {
+      const arr = half.startsWith('top') ? '▲'
+        : half.startsWith('bot') ? '▼'
+        : half.startsWith('mid') ? 'Mid'
+        : half.startsWith('end') ? 'End' : '·';
+      stateStr = inning ? `${arr} ${ordinal(inning)}` : (g.status?.detailedState || 'Live');
+    } else {
+      stateStr = fmtTime(g.gameDate);
+    }
+    // Score reading: prefer team-level score, fall back to linescore.runs.
+    const lsRuns = (side) => ls.teams?.[side]?.runs;
+    const homeScore = home.score ?? lsRuns('home');
+    const awayScore = away.score ?? lsRuns('away');
+    const hasScore = homeScore != null || awayScore != null;
+    const homeLead = homeScore != null && awayScore != null && homeScore > awayScore;
+    const awayLead = homeScore != null && awayScore != null && awayScore > homeScore;
+    const cls = isLive ? 'live' : isFinal ? 'final' : 'sched';
+
+    // Scheduled games haven't put runs on the board yet — showing dashes
+    // looks like missing data. Swap in the probable-pitcher matchup so the
+    // card has something useful to read.
+    if (!isLive && !isFinal && !hasScore) {
+      const homeP = lastName(home.probablePitcher?.fullName) || 'TBD';
+      const awayP = lastName(away.probablePitcher?.fullName) || 'TBD';
+      return `
+        <div class="nlc-game ${cls}">
+          <div class="nlc-state">${stateStr}</div>
+          <div class="nlc-row sched-row"><span class="abbr">${awayAbbr}</span><span class="prob">${awayP}</span></div>
+          <div class="nlc-row sched-row"><span class="abbr">${homeAbbr}</span><span class="prob">${homeP}</span></div>
+        </div>`;
+    }
+
+    const dispScore = (s) => (s == null ? '–' : s);
+    return `
+      <div class="nlc-game ${cls}">
+        <div class="nlc-state">${stateStr}</div>
+        <div class="nlc-row ${awayLead ? 'lead' : ''}"><span class="abbr">${awayAbbr}</span><span class="num">${dispScore(awayScore)}</span></div>
+        <div class="nlc-row ${homeLead ? 'lead' : ''}"><span class="abbr">${homeAbbr}</span><span class="num">${dispScore(homeScore)}</span></div>
+      </div>`;
+  }
+  function renderNLCRadar(games) {
+    const sec = $('nlc-radar-section');
+    const others = (games || []).filter(g =>
+      g.teams.home.team.id !== TEAM_ID && g.teams.away.team.id !== TEAM_ID
+    );
+    if (!others.length) { sec.style.display = 'none'; return; }
+    sec.style.display = 'block';
+    const sorted = sortNLCGames(others);
+    $('nlc-radar').innerHTML = sorted.map(renderNLCGame).join('');
+    $('nlc-count').textContent = `${sorted.length} GAME${sorted.length === 1 ? '' : 'S'}`;
+  }
+
+  function renderLineScoreStrip(linescore, awayLabel, homeLabel) {
+    const innings = linescore.innings || [];
+    const totals = linescore.teams || {};
+    const cur = linescore.currentInning;
+    const inningCount = Math.max(9, innings.length);
+    const headerCells = Array.from({ length: inningCount }, (_, i) => {
+      const n = i + 1;
+      return `<th class="${n === cur ? 'cur' : ''}">${n}</th>`;
+    }).join('');
+    const sideRow = (sideKey, label) => {
+      const cells = Array.from({ length: inningCount }, (_, i) => {
+        const inn = innings[i];
+        const n = i + 1;
+        if (!inn) return `<td class="empty">·</td>`;
+        const runs = inn[sideKey]?.runs;
+        if (runs == null) return `<td class="empty">·</td>`;
+        return `<td class="${n === cur ? 'cur' : ''}">${runs}</td>`;
+      }).join('');
+      const t = totals[sideKey] || {};
+      return `<tr>
+        <td class="team">${label}</td>
+        ${cells}
+        <td class="tot r">${t.runs ?? 0}</td>
+        <td class="tot">${t.hits ?? 0}</td>
+        <td class="tot">${t.errors ?? 0}</td>
+      </tr>`;
+    };
+    return `
+      <details class="live-linescore-wrap">
+        <summary class="live-linescore-summary">Linescore</summary>
+        <div class="live-linescore">
+          <table>
+            <thead><tr><th></th>${headerCells}<th>R</th><th>H</th><th>E</th></tr></thead>
+            <tbody>
+              ${sideRow('away', awayLabel)}
+              ${sideRow('home', homeLabel)}
+            </tbody>
+          </table>
+        </div>
+      </details>`;
+  }
+
+  function renderLiveGameCard(c, feed, wp, _clips = [], recordMap = null) {
+    const linescore = feed?.liveData?.linescore || {};
+    const inning = linescore.currentInning || c.raw.linescore?.currentInning || '?';
+    const half = (linescore.inningState || linescore.inningHalf || '').toLowerCase();
+    const halfArrow = half.startsWith('top') ? '▲' : half.startsWith('bot') ? '▼' : '·';
+    const halfLabel = half.startsWith('mid') ? `Mid ${ordinal(inning)}` : half.startsWith('end') ? `End ${ordinal(inning)}` : `${halfArrow} ${ordinal(inning)}`;
+
+    // Last described play, walking back through the play log.
+    const allPlays = feed?.liveData?.plays?.allPlays || [];
+    let lastPlay = '';
+    for (let i = allPlays.length - 1; i >= 0; i--) {
+      if (allPlays[i].result?.description) { lastPlay = allPlays[i].result.description; break; }
+    }
+
+    // Linescore strip labels.
+    const cubsLabel = 'CUBS';
+    const oppName = c.oppSide.team.teamName || c.oppSide.team.name;
+    const oppLabel = (c.oppSide.team.abbreviation || oppName).toUpperCase().slice(0, 4);
+    const awayLabel = c.isHome ? oppLabel : cubsLabel;
+    const homeLabel = c.isHome ? cubsLabel : oppLabel;
+
+    const scoreboardHTML = renderScoreboard(c, linescore, recordMap);
+    const wpSparkHTML = wpSparklineHTML(wp, c.isHome);
+
+    return `
+      <div class="next-game-card live-now">
+        <div class="next-game-label live-label">● LIVE · ${halfLabel}</div>
+        ${scoreboardHTML}
+        ${lastPlay ? `<div class="live-last">${lastPlay}</div>` : ''}
+        ${renderLineScoreStrip(linescore, awayLabel, homeLabel)}
+        ${wpSparkHTML}
+      </div>`;
+  }
+
+  function renderNextGame(nextClassified, recordMap, feed = null, wp = null, clips = []) {
+    const sec = $('next-game-section');
+    if (!nextClassified) { sec.style.display = 'none'; return; }
+    sec.style.display = 'block';
+    const c = nextClassified;
+
+    // Section header swaps to a live label while the game is underway —
+    // "Next Up" only makes sense before first pitch.
+    const title = $('next-game-title');
+    if (title) title.textContent = c.isLive ? 'Game In Progress' : 'Next Up';
+
+    if (c.isLive) {
+      $('next-game-content').innerHTML = renderLiveGameCard(c, feed, wp, clips, recordMap);
+      if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+      return;
+    }
+
+    const oppName = c.oppSide.team.name;
+    const oppRec = recordMap && recordMap[c.oppSide.team.id];
+    const recordTag = oppRec
+      ? ` <span class="opp-record opp-record-lg">${oppRec.wins}-${oppRec.losses}</span>`
+      : '';
+    const matchup = c.isHome
+      ? `Cubs <span class="vs">vs</span> ${oppName}${recordTag}`
+      : `Cubs <span class="vs">@</span> ${oppName}${recordTag}`;
+    const when = `${fmtDate(c.date)} · ${fmtTime(c.date)}`;
+
+    const html = `
+      <div class="next-game-card">
+        <div class="next-game-info">
+          <div class="next-game-label">Next Game</div>
+          <div class="next-game-matchup">${matchup}</div>
+          <div class="next-game-when">${when}${c.raw.venue ? ' · ' + c.raw.venue.name : ''}</div>
+        </div>
+        <div class="next-game-countdown" id="countdown">
+          <small>First pitch in</small>
+          <span id="countdown-value">·</span>
+        </div>
+      </div>`;
+    $('next-game-content').innerHTML = html;
+
+    if (countdownTimer) clearInterval(countdownTimer);
+    const target = new Date(c.date).getTime();
+    const tick = () => {
+      const diff = target - Date.now();
+      if (diff <= 0) { $('countdown-value').textContent = 'Underway'; clearInterval(countdownTimer); return; }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      const cd = $('countdown-value');
+      if (cd) cd.textContent = d > 0 ? `${d}d ${h}h ${m}m` : `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    };
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+  }
+
+  // ---------- Confetti & W flag ----------
+  const canvas = $('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  function sizeCanvas() { canvas.width = innerWidth; canvas.height = innerHeight; }
+  sizeCanvas(); addEventListener('resize', sizeCanvas);
+
+  function confetti(burstSize = 140) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const colors = ['#FAF6E9', '#C9A961', '#0E3386', '#CC3433', '#5a8a4a'];
+    const particles = [];
+    for (let i = 0; i < burstSize; i++) {
+      particles.push({
+        x: innerWidth / 2 + (Math.random() - 0.5) * 200,
+        y: innerHeight / 2,
+        vx: (Math.random() - 0.5) * 14,
+        vy: -Math.random() * 16 - 6,
+        g: 0.45 + Math.random() * 0.2,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.3,
+        size: 6 + Math.random() * 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: 0
+      });
+    }
+    let frame = 0;
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = 0;
+      for (const p of particles) {
+        p.vy += p.g;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        p.life++;
+        if (p.y < canvas.height + 50 && p.life < 220) {
+          alive++;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+          ctx.restore();
+        }
+      }
+      frame++;
+      if (alive > 0 && frame < 280) requestAnimationFrame(draw);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    requestAnimationFrame(draw);
+  }
+
+  function flyTheW(loud = false) {
+    const flag = $('w-flag');
+    flag.classList.remove('flying');
+    void flag.offsetWidth;
+    flag.classList.add('flying');
+    if (loud) {
+      confetti(180);
+      toast('Fly the W.');
+    }
+  }
+
+  // ---------- Toast ----------
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  // ---------- Last 10 / streak detection from games ----------
+  function detectFreshWin(recentClassified) {
+    if (!recentClassified.length) return false;
+    const lastFinal = [...recentClassified].reverse().find(g => g.isFinal && g.result);
+    if (!lastFinal) return false;
+    const key = `cubs-last-final-${lastFinal.raw.gamePk}`;
+    const seen = localStorage.getItem('cubs-last-final-seen');
+    const isNew = seen !== key;
+    localStorage.setItem('cubs-last-final-seen', key);
+    return isNew && lastFinal.result === 'W';
+  }
+
+  // ---------- Last updated ----------
+  function setLastUpdated() {
+    const now = new Date();
+    $('last-updated').textContent = `Updated ${now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`;
+  }
+
+  // ---------- Errors ----------
+  function showError(err) {
+    console.error(err);
+    heroNumber.textContent = '··';
+    heroContext.innerHTML = `Couldn't reach the MLB Stats API just now. <button class="refresh-btn" onclick="loadAll()" style="vertical-align:middle;display:inline-flex;width:28px;height:28px;">↻</button>`;
+    toast('Connection hiccup. Try refreshing.');
+  }
+
+  // ---------- Main loader ----------
+  let firstLoad = true;
+  let liveMode = false;
+  async function loadAll() {
+    const btn = $('refresh-btn');
+    btn.classList.add('spinning');
+    try {
+      // 21 days back, 14 days forward — gives a fat recent + upcoming window.
+      const start = new Date(); start.setDate(start.getDate() - 21);
+      const end = new Date(); end.setDate(end.getDate() + 14);
+
+      const [standingsBaseline, schedule, nlcToday] = await Promise.all([
+        fetchStandings(),
+        fetchSchedule(isoDate(start), isoDate(end)),
+        fetchNLCentralToday().catch(() => null)
+      ]);
+
+      // Overlay today's actual final results onto yesterday's stable
+      // baseline. This makes the magic number bulletproof against MLB's
+      // standings-refresh lag — if the Cubs (or any chaser) finished a game
+      // today, that result is already counted.
+      const todayNLCGames = nlcToday ? dedupeNLCGames(nlcToday) : [];
+      const todayDeltas = computeTodayDeltas(todayNLCGames);
+      const standings = applyTodayDeltas(standingsBaseline, todayDeltas, false);
+
+      // Standings: NL Central (for magic-number math) + flat record map (for opponent badges)
+      const nlCentral = standings.records.find(r => r.division.id === NL_CENTRAL_DIV_ID);
+      if (!nlCentral) throw new Error('NL Central not found');
+      const recordMap = buildTeamRecordMap(standings);
+
+      const state = computeMagic(nlCentral.teamRecords);
+
+      // Live projection: also fold in current in-progress game results so we
+      // can show "if today's live games hold, magic drops to X". Compared to
+      // `state`, this only differs when there's a live game with a leader.
+      const liveStandings = applyTodayDeltas(standingsBaseline, todayDeltas, true);
+      const liveNL = liveStandings.records.find(r => r.division.id === NL_CENTRAL_DIV_ID);
+      const liveState = liveNL ? computeMagic(liveNL.teamRecords) : null;
+      state.liveProjectedMagic = liveState?.magicToClinch ?? null;
+      state.liveProjectedDelta = liveState ? state.magicToClinch - liveState.magicToClinch : 0;
+
+      // Games
+      const allGames = [];
+      (schedule.dates || []).forEach(day => {
+        (day.games || []).forEach(g => allGames.push(classifyGame(g)));
+      });
+      allGames.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      const now = Date.now();
+      const recent = allGames.filter(g => g.isFinal).slice(-10);
+      const live = allGames.filter(g => g.isLive);
+      const upcoming = allGames.filter(g => !g.isFinal && !g.isLive && new Date(g.date).getTime() >= now - 60000).slice(0, 8);
+
+      // If a game is live, parallel-fetch the play-by-play feed and win prob.
+      let liveFeed = null, liveWP = null;
+      if (live[0]) {
+        const gpk = live[0].raw.gamePk;
+        [liveFeed, liveWP] = await Promise.all([
+          fetchLiveFeed(gpk).catch(() => null),
+          fetchWinProbability(gpk).catch(() => null),
+        ]);
+      }
+
+      // NL Central live radar — reuse the today-NLC games we already pulled
+      // and deduped above for the standings overlay.
+      const nlcGames = todayNLCGames;
+      const anyChaserLive = nlcGames.some(g =>
+        g.teams.home.team.id !== TEAM_ID
+        && g.teams.away.team.id !== TEAM_ID
+        && isCodeLive(g.status?.codedGameState || '')
+      );
+      liveMode = live.length > 0 || anyChaserLive;
+
+      // The LIVE pill in the topbar reflects whether a Cubs game is in
+      // progress — not just any chaser game. Per design: ambient pulse only
+      // when the diehard's team is actually playing.
+      const livePill = $('live-pill');
+      if (livePill) livePill.hidden = !(live.length > 0);
+
+      // Pump it all out
+      renderHero(state);
+      renderMeta(state.cubs, recent);
+      renderStandings(state.sorted);
+      renderNLCRadar(nlcGames);
+      renderGames(recent, upcoming, recordMap);
+      const next = live[0] || upcoming[0] || null;
+      renderNextGame(next, recordMap, liveFeed, liveWP);
+
+      setLastUpdated();
+
+      if (!firstLoad && detectFreshWin(allGames.filter(g => g.isFinal))) {
+        flyTheW(true);
+      }
+      firstLoad = false;
+    } catch (e) {
+      showError(e);
+    } finally {
+      setTimeout(() => btn.classList.remove('spinning'), 400);
+    }
+  }
+
+  // ---------- Highlights modal ----------
+  const hlOverlay = $('hl-overlay');
+  function openHighlights(gamePk, btn) {
+    // Build a friendly subtitle from the card the button lives in.
+    const card = btn.classList.contains('game-card') ? btn : btn.closest('.game-card');
+    const date = card?.querySelector('.gc-date')?.textContent || '';
+    const opp = card?.querySelector('.gc-opp')?.textContent.trim() || '';
+    const score = card?.querySelector('.gc-score')?.textContent || '';
+    const isHome = btn.dataset.ishome === '1';
+    $('hl-title').textContent = opp || 'Highlights';
+    $('hl-sub').textContent = [date, score].filter(Boolean).join(' · ');
+    $('hl-body').innerHTML = `<div class="hl-loading">Loading clips…</div>`;
+    hlOverlay.classList.add('show');
+
+    if (btn.tagName === 'BUTTON') btn.disabled = true;
+    Promise.all([
+      fetchHighlights(gamePk),
+      fetchWinProbability(gamePk).catch(() => null)
+    ]).then(([clips, wp]) => {
+      if (btn.tagName === 'BUTTON') btn.disabled = false;
+      const wpChart = wp ? buildWPChart(wp, isHome) : '';
+      if (!clips.length) {
+        $('hl-body').innerHTML = wpChart + `<div class="hl-empty">No highlights posted for this game yet.</div>`;
+        return;
+      }
+      renderHighlightsBody(clips, wpChart);
+    }).catch(err => {
+      btn.disabled = false;
+      console.error(err);
+      $('hl-body').innerHTML = `<div class="hl-empty">Couldn't load highlights. Try again later.</div>`;
+    });
+  }
+  function buildWPChart(wp, isHome) {
+    if (!Array.isArray(wp) || wp.length < 2) return '';
+    const points = wp.map(p => {
+      const homeWP = p.homeTeamWinProbability;
+      if (homeWP == null) return null;
+      return isHome ? homeWP : (100 - homeWP);
+    }).filter(v => v != null);
+    if (points.length < 2) return '';
+
+    const W = 600, H = 80, P = 4;
+    const xAt = i => P + (i / (points.length - 1)) * (W - 2 * P);
+    const yAt = v => P + (1 - v / 100) * (H - 2 * P);
+    const path = points.map((v, i) => `${i === 0 ? 'M' : 'L'}${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join('');
+    const area = path + ` L${xAt(points.length - 1).toFixed(1)},${H} L${xAt(0).toFixed(1)},${H} Z`;
+    const finalWP = Math.round(points[points.length - 1]);
+    const peak = Math.round(Math.max(...points));
+    const valley = Math.round(Math.min(...points));
+    const swing = peak - valley;
+
+    return `
+      <div class="wp-chart">
+        <div class="wp-chart-header">
+          <span>Cubs win probability</span>
+          <span class="swing">peak ${peak}% · low ${valley}% · swing ${swing}pt</span>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="wp-svg">
+          <line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="rgba(14,30,75,0.12)" stroke-dasharray="2 4"/>
+          <path d="${area}" fill="rgba(14,51,134,0.18)"/>
+          <path d="${path}" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="${xAt(points.length - 1).toFixed(1)}" cy="${yAt(points[points.length - 1]).toFixed(1)}" r="3.5" fill="${finalWP >= 50 ? 'var(--win)' : 'var(--loss)'}"/>
+        </svg>
+      </div>`;
+  }
+  function renderHighlightsBody(clips, wpChart = '', startIdx = 0) {
+    const player = `
+      <div class="hl-player" id="hl-player">
+        <span>Pick a clip below to play</span>
+      </div>
+      <h4 class="hl-now-title" id="hl-now-title"></h4>
+      <p class="hl-now-blurb" id="hl-now-blurb"></p>`;
+    const list = `<div class="hl-list">${clips.map((c, i) => `
+      <button class="hl-item" data-idx="${i}">
+        <div class="hl-thumb" style="background-image:url('${c.thumb}')"></div>
+        <div class="hl-item-title">${c.title}</div>
+      </button>`).join('')}</div>`;
+    $('hl-body').innerHTML = wpChart + player + list;
+    const idx = Math.max(0, Math.min(startIdx, clips.length - 1));
+    playClip(clips, idx);
+    $('hl-body').addEventListener('click', e => {
+      const item = e.target.closest('.hl-item');
+      if (!item) return;
+      playClip(clips, parseInt(item.dataset.idx, 10));
+    });
+  }
+
+  function playClip(clips, idx) {
+    const c = clips[idx];
+    if (!c) return;
+    $('hl-player').innerHTML = `<video controls autoplay playsinline preload="metadata" src="${c.mp4}"></video>`;
+    $('hl-now-title').textContent = c.title;
+    $('hl-now-blurb').textContent = c.blurb || '';
+    document.querySelectorAll('.hl-item').forEach((el, i) => {
+      el.classList.toggle('active', i === idx);
+    });
+  }
+  function closeHighlights() {
+    hlOverlay.classList.remove('show');
+    // Stop any playing video so audio doesn't keep going.
+    const v = hlOverlay.querySelector('video');
+    if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
+  }
+
+  // ---------- Wire up ----------
+  $('refresh-btn').addEventListener('click', () => loadAll());
+  $('w-flag').addEventListener('click', () => flyTheW(true));
+
+  // Delegate clicks on final game cards (and the legacy highlights button)
+  // since the cards are re-rendered every refresh.
+  document.addEventListener('click', e => {
+    const card = e.target.closest('.game-card.clickable[data-gamepk]');
+    if (card) { openHighlights(card.dataset.gamepk, card); return; }
+    const btn = e.target.closest('.highlights-btn');
+    if (btn) openHighlights(btn.dataset.gamepk, btn);
+  });
+  $('hl-close').addEventListener('click', closeHighlights);
+  hlOverlay.addEventListener('click', e => { if (e.target === hlOverlay) closeHighlights(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && hlOverlay.classList.contains('show')) closeHighlights(); });
+
+  // Easter egg: 7th-inning stretch hint between 7 and 8 p.m. CT-ish
+  setTimeout(() => {
+    const h = new Date().getHours();
+    if (h === 19) toast('Take me out to the ball game.');
+  }, 1500);
+
+  // Adaptive polling: faster cadence while a game is live, paused while the tab
+  // is hidden so we don't burn API calls on a backgrounded tab.
+  let pollTimer = null;
+  function scheduleNextPoll() {
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+    if (document.hidden) return;
+    pollTimer = setTimeout(async () => {
+      await loadAll();
+      scheduleNextPoll();
+    }, liveMode ? REFRESH_LIVE_MS : REFRESH_MS);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+    } else {
+      // Catch up immediately when the tab comes back to the foreground.
+      loadAll().then(scheduleNextPoll);
+    }
+  });
+  loadAll().then(scheduleNextPoll);
+</script>
+</body>
+</html>
