@@ -2,7 +2,9 @@
 
 A live, single-page Chicago Cubs magic-number tracker. For the Cubs fan who doesn't want to wait until September to start the countdown.
 
-**Live site:** https://jrsherlock.github.io/fly-the-w/
+**Live site:** https://fly-the-w.vercel.app (the older GitHub Pages copy at
+https://jrsherlock.github.io/fly-the-w/ still works — its alert bell talks to
+the Vercel API cross-origin)
 
 ## What it does
 
@@ -25,7 +27,23 @@ python3 -m http.server 8000
 
 ## Tech
 
-- Vanilla HTML / CSS / JS — no build step, no dependencies.
+- Vanilla HTML / CSS / JS front end — no build step, no dependencies. The only
+  server code is two Vercel Functions in `api/` (`web-push` + `@vercel/blob`).
+
+## PWA + game-day alerts
+
+Install it (Android/desktop get an Install chip; iOS uses Share → Add to Home
+Screen) and tap the bell for push alerts:
+
+- **First pitch soon** — ~30 minutes before the Cubs game starts.
+- **Late & close** — 8th inning or later, margin ≤2 runs.
+- **Fly the W / Final** — the result, and on wins the updated magic number
+  (same binding-chaser math as the hero).
+
+Subscriptions are stored AES-256-GCM-encrypted in Vercel Blob; a GitHub Actions
+cron (`.github/workflows/push-poller.yml`) pings `api/poll.js` each minute
+during game windows, which reads the same MLB Stats API endpoints and fans out
+via Web Push (alert logic is pure and unit-tested in `tests/`).
 - Bebas Neue + Inter + JetBrains Mono via Google Fonts.
 - Hand-rolled canvas confetti.
 
