@@ -2,11 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Cubs Magic Number — Fly the W</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0E3386">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fly the W">
 <meta property="og:title" content="Cubs Magic Number — Fly the W">
 <meta property="og:description" content="Live magic-number tracker for the Chicago Cubs. For fans who don't want to wait until September.">
 <meta property="og:image" content="cubs-logo.png">
@@ -75,6 +80,49 @@
     z-index: 0;
   }
 
+  [hidden] { display: none !important; }
+
+  /* Push alerts + install */
+  .bell-btn[aria-pressed="true"] {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #04081a;
+  }
+  .install-chip {
+    background: none;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer;
+  }
+  .ios-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 200;
+    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    border-top: 3px solid var(--gold);
+    padding: 20px 24px calc(20px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -14px 40px rgba(0,0,0,0.6);
+  }
+  .ios-sheet h3 {
+    margin: 0 0 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 0.06em;
+    color: var(--gold);
+  }
+  .ios-sheet ol { margin: 0 0 10px 20px; padding: 0; color: var(--ink); font-size: 14px; }
+  .ios-sheet li { margin-bottom: 6px; }
+  .ios-sheet b { color: var(--gold); }
+  .ios-sheet .note { color: var(--ink-faint); font-size: 12px; margin: 0 0 14px; }
+  .ios-sheet .close {
+    background: var(--gold); color: #04081a; border: none;
+    border-radius: 999px; padding: 9px 22px;
+    font-weight: 800; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer;
+  }
+
   /* Ivy decorations */
   .ivy {
     position: fixed; pointer-events: none; z-index: 1;
@@ -102,6 +150,10 @@
     background: linear-gradient(180deg, rgba(4,8,26,0.85), rgba(4,8,26,0.55));
     border-bottom: 1px solid rgba(255,255,255,0.06);
     padding: 14px 32px;
+    /* installed-PWA mode extends under the iOS status bar; keep content clear of it */
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    padding-left: calc(32px + env(safe-area-inset-left, 0px));
+    padding-right: calc(32px + env(safe-area-inset-right, 0px));
     display: flex; align-items: center; justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
@@ -1775,6 +1827,8 @@
       </div>
     </div>
     <div class="status">
+      <button class="install-chip" id="install-chip" hidden>Install</button>
+      <button class="refresh-btn bell-btn" id="bell-btn" hidden aria-pressed="false" aria-label="Game-day alerts" title="Game-day alerts">🔔</button>
       <a class="lab-link" href="wp-overlay.html" title="Season-long win-probability overlay">📈 WP Lab</a>
       <span class="live-pill"><span class="live-dot"></span> LIVE</span>
       <span id="last-updated">Loading…</span>
@@ -1851,6 +1905,17 @@
 
   <div class="toast" id="toast"></div>
   <canvas id="confetti-canvas"></canvas>
+
+  <div class="ios-sheet" id="ios-sheet" hidden role="dialog" aria-label="Enable alerts on iPhone">
+    <h3>Get Cubs alerts on your iPhone</h3>
+    <ol>
+      <li>Tap the <b>Share</b> button in Safari</li>
+      <li>Choose <b>Add to Home Screen</b></li>
+      <li>Open <b>Fly the W</b> from your home screen and tap the bell</li>
+    </ol>
+    <p class="note">Requires iOS 16.4 or later.</p>
+    <button class="close" id="ios-sheet-close">Got it</button>
+  </div>
 
   <div class="hl-overlay" id="hl-overlay" role="dialog" aria-modal="true" aria-labelledby="hl-title">
     <div class="hl-modal" id="hl-modal">
@@ -3590,6 +3655,83 @@
       loadAll().then(scheduleNextPoll);
     }
   });
+  // ---------- PWA + push ----------
+  const PUSH_API = location.hostname.endsWith('github.io') ? 'https://fly-the-w.vercel.app' : '';
+  const PUSH = { reg: null, deferredPrompt: null };
+  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+  function b64ToU8(b64) {
+    const pad = '='.repeat((4 - b64.length % 4) % 4);
+    const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+  }
+
+  async function reflectBell() {
+    const bell = $('bell-btn');
+    let on = false;
+    if (PUSH.reg && 'pushManager' in PUSH.reg) {
+      on = !!(await PUSH.reg.pushManager.getSubscription().catch(() => null));
+    }
+    bell.setAttribute('aria-pressed', String(on));
+    bell.setAttribute('aria-label', on ? 'Game-day alerts on — tap to turn off' : 'Get game-day alerts');
+  }
+
+  async function onBellTap() {
+    if (isIOS() && !isStandalone()) { $('ios-sheet').hidden = false; return; }
+    if (!PUSH.reg || !('pushManager' in PUSH.reg) || !('Notification' in window)) {
+      toast('Push not supported in this browser'); return;
+    }
+    const existing = await PUSH.reg.pushManager.getSubscription().catch(() => null);
+    if (existing) {
+      await existing.unsubscribe().catch(() => {});
+      await fetch(`${PUSH_API}/api/subscribe`, { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ endpoint: existing.endpoint }) }).catch(() => {});
+      await reflectBell();
+      toast('Alerts off');
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { toast(perm === 'denied' ? 'Notifications are blocked in browser settings' : 'Alerts not enabled'); return; }
+    try {
+      const { publicKey } = await (await fetch(`${PUSH_API}/api/subscribe`)).json();
+      if (!publicKey) throw new Error('no key');
+      const sub = await PUSH.reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(publicKey) });
+      const res = await fetch(`${PUSH_API}/api/subscribe`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(sub) });
+      if (!res.ok) throw new Error(`subscribe ${res.status}`);
+      await reflectBell();
+      toast('🔔 Alerts on — see you at first pitch');
+    } catch (err) {
+      console.error('[fly-the-w] push', err);
+      toast('Could not enable alerts — try again');
+    }
+  }
+
+  function initPWA(reg) {
+    PUSH.reg = reg;
+    const bell = $('bell-btn');
+    const pushCapable = 'PushManager' in window && 'Notification' in window;
+    if (pushCapable || (isIOS() && !isStandalone())) bell.hidden = false;
+    reflectBell();
+    bell.addEventListener('click', onBellTap);
+    $('ios-sheet-close').addEventListener('click', () => { $('ios-sheet').hidden = true; });
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      PUSH.deferredPrompt = e;
+      if (!isStandalone()) $('install-chip').hidden = false;
+    });
+    $('install-chip').addEventListener('click', async () => {
+      if (!PUSH.deferredPrompt) return;
+      PUSH.deferredPrompt.prompt();
+      await PUSH.deferredPrompt.userChoice.catch(() => {});
+      PUSH.deferredPrompt = null;
+      $('install-chip').hidden = true;
+    });
+  }
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(initPWA).catch((e) => console.error('[fly-the-w] sw', e));
+  }
+
   loadAll().then(scheduleNextPoll);
 </script>
 </body>
