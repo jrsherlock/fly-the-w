@@ -1,0 +1,26 @@
+{
+  "name": "fly-the-w",
+  "version": "1.0.0",
+  "description": "A live, single-page Chicago Cubs magic-number tracker. For the Cubs fan who doesn't want to wait until September to start the countdown.",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jrsherlock/fly-the-w.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/jrsherlock/fly-the-w/issues"
+  },
+  "homepage": "https://github.com/jrsherlock/fly-the-w#readme",
+  "private": true,
+  "dependencies": {
+    "@vercel/blob": "^2.6.1",
+    "web-push": "^3.6.7"
+  }
+}

@@ -4,3 +4,6 @@
 
 # Original (uncropped) source PNG — not used by the site
 Chicago-Cubs-Logo.png
+.vercel
+.env*
+node_modules/
