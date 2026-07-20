@@ -8,10 +8,18 @@ const NL_CENTRAL_DIV_ID = 205;
 const TOTAL_GAMES = 162;
 const MIN = 60000, HOUR = 3600e3;
 const FIRSTPITCH_WINDOW = 35 * MIN;  // alert when first pitch is this close
-const CHECK_LEAD = 45 * MIN;         // loop wakes this far ahead of first pitch
+const CHECK_LEAD = 90 * MIN;         // window opens this far ahead of first pitch —
+                                     // GitHub delays */30 crons to ~hourly, so a run
+                                     // must be able to attach well before the game
 const FINAL_WINDOW = 6 * HOUR;       // ignore finals older than this (vs scheduled start)
 const CHECK_TAIL = 4.5 * HOUR;       // stateless post-start active window (baseball runs long)
 const STATE_KEY = 'state/alerts.json';
+
+/* Game alerts are time-sensitive: 'high' urgency asks the push service to wake
+   the device now (iOS defers/coalesces 'normal'-urgency pushes, sometimes
+   indefinitely on a locked or low-power phone), and the TTL drops anything
+   still undelivered after 4h — a stale game alert helps nobody. */
+const PUSH_OPTS = { TTL: 4 * 3600, urgency: 'high' };
 
 const isoDate = (ms) => new Date(ms).toISOString().split('T')[0];
 const scheduleUrl = (now) =>
@@ -121,6 +129,11 @@ export function decideAlerts(games, magic, state, now) {
   return out;
 }
 
+/* An alert's sent-key is recorded once it settles: some delivery succeeded, or
+   every endpoint is permanently gone. If all sends failed transiently, leave it
+   unrecorded so the next poll retries instead of silently dropping the alert. */
+export const shouldMarkSent = (settled, transient) => settled > 0 || transient === 0;
+
 /* ---------------- I/O ---------------- */
 
 async function getJSON(url) {
@@ -179,15 +192,30 @@ export default async function handler(req, res) {
       process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
     const subs = await loadSubs();
     let sent = 0, pruned = 0;
+    const errors = [];
     for (const s of subs) {
       try {
-        await webpush.sendNotification(s.sub, JSON.stringify({ title: '🔔 Test alert', body: 'Push notifications are working. Play ball!', url: './', tag: 'test' }));
+        await webpush.sendNotification(s.sub, JSON.stringify({ title: '🔔 Test alert', body: 'Push notifications are working. Play ball!', url: './', tag: 'test' }), PUSH_OPTS);
         sent++;
       } catch (err) {
         if (err.statusCode === 404 || err.statusCode === 410) { await del(s.url).catch(() => {}); pruned++; }
+        else { errors.push(err.statusCode || 0); console.error('[poll] test send failed', err.statusCode, err.body || err.message); }
       }
     }
-    return res.status(200).json({ mode: 'test', subscribers: subs.length, sent, pruned });
+    return res.status(200).json({ mode: 'test', subscribers: subs.length, sent, pruned, errors });
+  }
+
+  /* Who is subscribed, and what has been sent? Answers "did my phone get
+     dropped?" without digging through the blob store. Endpoint hostnames only
+     (web.push.apple.com / fcm.googleapis.com / …) — never the full endpoint. */
+  if (req.query && req.query.mode === 'status') {
+    const [subs, state] = await Promise.all([loadSubs(), loadState()]);
+    const service = (e) => { try { return new URL(e).hostname; } catch { return 'unknown'; } };
+    return res.status(200).json({
+      mode: 'status',
+      subscribers: subs.map((s) => ({ service: service(s.sub.endpoint), created: s.sub.created ? new Date(s.sub.created).toISOString() : null })),
+      sent: Object.fromEntries(Object.entries(state.sent).map(([k, ts]) => [k, new Date(ts).toISOString()])),
+    });
   }
 
   const games = parseScheduleLite(await getJSON(scheduleUrl(now)));
@@ -203,22 +231,28 @@ export default async function handler(req, res) {
 
   const alerts = decideAlerts(games, magic, state, now);
   let sent = 0, pruned = 0;
+  const errors = [];
   if (alerts.length) {
     webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:jsherlock@cybercade.com',
       process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
     const subs = await loadSubs();
     for (const alert of alerts) {
+      let settled = 0, transient = 0;
       for (const s of subs) {
         try {
-          await webpush.sendNotification(s.sub, JSON.stringify({ title: alert.title, body: alert.body, url: alert.url, tag: alert.key }));
-          sent++;
+          await webpush.sendNotification(s.sub, JSON.stringify({ title: alert.title, body: alert.body, url: alert.url, tag: alert.key }), PUSH_OPTS);
+          sent++; settled++;
         } catch (err) {
-          if (err.statusCode === 404 || err.statusCode === 410) { await del(s.url).catch(() => {}); pruned++; }
+          if (err.statusCode === 404 || err.statusCode === 410) { await del(s.url).catch(() => {}); pruned++; settled++; }
+          else {
+            transient++; errors.push(`${alert.key}:${err.statusCode || 0}`);
+            console.error('[poll] send failed', alert.key, err.statusCode, err.body || err.message);
+          }
         }
       }
-      state.sent[alert.key] = now;
+      if (shouldMarkSent(settled, transient)) state.sent[alert.key] = now;
     }
     await saveState(state, now);
   }
-  return res.status(200).json({ active: computeActive(games, now, state), alerts: alerts.map((a) => a.key), sent, pruned });
+  return res.status(200).json({ active: computeActive(games, now, state), alerts: alerts.map((a) => a.key), sent, pruned, errors });
 }

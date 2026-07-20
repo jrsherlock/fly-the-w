@@ -43,8 +43,13 @@ game state from `status.codedGameState` ('F'/'O' final, 'I' live, else pre).
   chaserL`, chaser = fewest losses among non-leaders) from NL standings
   (`leagueId=104`, division 205).
 - No player-watch equivalent (skipped by design).
-- Poller windows: first-pitch lead 45 min; post-game tail 4.5 h (baseball games
-  run longer); alerts keyed by `gamePk` so double-headers dedupe independently.
+- Poller windows: first-pitch lead 90 min — GitHub throttles `*/30` crons to
+  ~hourly, so a run must be able to attach well before the game, and it stays
+  attached until the window closes rather than exiting after a fixed 25 min
+  (the 2026-07-19 final fell into exactly that coverage hole); post-game tail
+  4.5 h (baseball games run longer); alerts keyed by `gamePk` so double-headers
+  dedupe independently. Sends are high-urgency with a 4 h TTL; an alert whose
+  sends all failed transiently stays unmarked and is retried next poll.
 
 ## Unchanged from CC Tracker
 
