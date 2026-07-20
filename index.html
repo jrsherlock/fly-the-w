@@ -3677,6 +3677,16 @@
     bell.setAttribute('aria-label', on ? 'Game-day alerts on — tap to turn off' : 'Get game-day alerts');
   }
 
+  /* iOS can rotate or invalidate a push subscription without ever firing
+     pushsubscriptionchange; re-register the live subscription on every open so
+     the server-side store always matches this device. POST is idempotent. */
+  async function resyncPush() {
+    try {
+      const sub = PUSH.reg && 'pushManager' in PUSH.reg ? await PUSH.reg.pushManager.getSubscription() : null;
+      if (sub) await fetch(`${PUSH_API}/api/subscribe`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(sub) });
+    } catch { /* offline — next open retries */ }
+  }
+
   async function onBellTap() {
     if (isIOS() && !isStandalone()) { $('ios-sheet').hidden = false; return; }
     if (!PUSH.reg || !('pushManager' in PUSH.reg) || !('Notification' in window)) {
@@ -3712,6 +3722,7 @@
     const pushCapable = 'PushManager' in window && 'Notification' in window;
     if (pushCapable || (isIOS() && !isStandalone())) bell.hidden = false;
     reflectBell();
+    resyncPush();
     bell.addEventListener('click', onBellTap);
     $('ios-sheet-close').addEventListener('click', () => { $('ios-sheet').hidden = true; });
     window.addEventListener('beforeinstallprompt', (e) => {

@@ -4,6 +4,10 @@ on:
     - cron: '*/30 * * * *'
   workflow_dispatch:
 
+# One poller at a time. While a run is attached to a game window, later cron
+# firings queue behind it (GitHub keeps only the newest pending run and marks
+# older waiters "cancelled" — that's normal noise, not a failure); once the
+# window closes they check, find no game, and exit in seconds.
 concurrency:
   group: push-poller
   cancel-in-progress: false
@@ -11,20 +15,40 @@ concurrency:
 jobs:
   poll:
     runs-on: ubuntu-latest
-    timeout-minutes: 28
+    # GitHub delays */30 crons to roughly hourly under load, so a run can NOT
+    # count on a successor arriving soon: a fixed 25-minute loop left ~35-minute
+    # holes each hour, and the 2026-07-19 final landed in one (sent 38 min
+    # late). Instead, once a window is active this run stays attached until the
+    # window closes (final alert sent), polling every 60s. Cap sits just under
+    # the 6h job limit; a pre-game lead (90 min) + any MLB game fits.
+    timeout-minutes: 355
     steps:
-      - name: Poll during game windows
+      - name: Poll until the game window closes
         env:
           POLL_SECRET: ${{ secrets.POLL_SECRET }}
         run: |
           BASE="https://fly-the-w.vercel.app/api/poll"
-          CHECK=$(curl -sf "$BASE?mode=check" -H "Authorization: Bearer $POLL_SECRET" || echo '{}')
+          CHECK=""
+          for i in 1 2 3; do
+            CHECK=$(curl -sf "$BASE?mode=check" -H "Authorization: Bearer $POLL_SECRET") && break
+            echo "check attempt $i failed"; CHECK=""; sleep 10
+          done
+          if [[ -z "$CHECK" ]]; then
+            echo "::error::mode=check unreachable — bad POLL_SECRET, Vercel outage, or network"; exit 1
+          fi
           echo "check: $CHECK"
           if [[ "$CHECK" != *'"active":true'* ]]; then echo "No game window. Exiting."; exit 0; fi
-          END=$((SECONDS + 1500))
+          END=$((SECONDS + 21000)); FAILS=0
           while (( SECONDS < END )); do
-            OUT=$(curl -sf "$BASE" -H "Authorization: Bearer $POLL_SECRET" || echo '{}')
-            echo "$(date -u +%T) $OUT"
-            if [[ "$OUT" == *'"active":false'* ]]; then echo "Window closed."; exit 0; fi
+            if OUT=$(curl -sf "$BASE" -H "Authorization: Bearer $POLL_SECRET"); then
+              FAILS=0
+              echo "$(date -u +%T) $OUT"
+              if [[ "$OUT" == *'"active":false'* ]]; then echo "Window closed."; exit 0; fi
+            else
+              FAILS=$((FAILS + 1))
+              echo "$(date -u +%T) poll request failed ($FAILS consecutive)"
+              if (( FAILS >= 10 )); then echo "::error::10 consecutive poll failures"; exit 1; fi
+            fi
             sleep 60
           done
+          echo "Runner lifetime cap reached; next cron takes over."

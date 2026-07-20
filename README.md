@@ -41,9 +41,14 @@ Screen) and tap the bell for push alerts:
   (same binding-chaser math as the hero).
 
 Subscriptions are stored AES-256-GCM-encrypted in Vercel Blob; a GitHub Actions
-cron (`.github/workflows/push-poller.yml`) pings `api/poll.js` each minute
-during game windows, which reads the same MLB Stats API endpoints and fans out
-via Web Push (alert logic is pure and unit-tested in `tests/`).
+cron (`.github/workflows/push-poller.yml`) attaches to each game window — from
+90 minutes before first pitch until the final alert is out — and pings
+`api/poll.js` once a minute for the whole window. (GitHub delays `*/30` crons
+to roughly hourly, so one long-lived run per game is what keeps finals prompt.)
+Pushes go out with high urgency and a 4-hour TTL, failed sends are logged and
+retried, `api/poll.js?mode=status` reports subscribers + send history, and the
+app re-registers its push subscription on every open (alert logic is pure and
+unit-tested in `tests/`).
 - Bebas Neue + Inter + JetBrains Mono via Google Fonts.
 - Hand-rolled canvas confetti.
 

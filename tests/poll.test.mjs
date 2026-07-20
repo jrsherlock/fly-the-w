@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { decideAlerts, computeActive, computeMagicNumber, parseScheduleLite } from '../api/poll.js';
+import { decideAlerts, computeActive, computeMagicNumber, parseScheduleLite, shouldMarkSent } from '../api/poll.js';
 import { validSubscription } from '../api/subscribe.js';
 import { sealJSON, openJSON } from '../lib/pushcrypto.js';
 import { randomBytes } from 'node:crypto';
@@ -88,14 +88,23 @@ test('final: win flies the W with magic number, loss is plain', () => {
   assert.equal(decideAlerts(done(true), magic, { sent: {} }, T0 + 7 * H).length, 0);
 });
 
-test('computeActive gates the polling loop (4.5h baseball tail)', () => {
+test('computeActive gates the polling loop (90m lead, 4.5h baseball tail)', () => {
   assert.equal(computeActive([game({ state: 'in' })], T0, null), true);
   assert.equal(computeActive([game()], T0 - 40 * MIN, null), true);
+  // 90-min lead: crons throttled to ~hourly still land a run before first pitch
+  assert.equal(computeActive([game()], T0 - 80 * MIN, null), true);
   assert.equal(computeActive([game()], T0 - 2 * H, null), false);
   const done = [game({ state: 'post', completed: true })];
   assert.equal(computeActive(done, T0 + 4 * H, null), true);
   assert.equal(computeActive(done, T0 + 4 * H, { sent: { 'final:776000': 1 } }), false);
   assert.equal(computeActive(done, T0 + 5 * H, null), false);
+});
+
+test('shouldMarkSent: only an all-transient failure keeps an alert retryable', () => {
+  assert.equal(shouldMarkSent(1, 0), true);   // delivered cleanly
+  assert.equal(shouldMarkSent(1, 1), true);   // partial success — never re-spam the device that got it
+  assert.equal(shouldMarkSent(0, 0), true);   // no subscribers left — nothing to retry
+  assert.equal(shouldMarkSent(0, 2), false);  // every send failed transiently — retry next poll
 });
 
 test('computeMagicNumber uses binding chaser (fewest losses), mirrors app math', () => {
